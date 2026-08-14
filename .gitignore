@@ -8,6 +8,9 @@ db.sqlite3
 
 # Local credentials
 .env
+deploy/.env
+deploy/backups/
+deploy/certbot/
 
 # Media uploads and collected static directories
 media/

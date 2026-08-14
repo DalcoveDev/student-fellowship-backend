@@ -206,6 +206,7 @@ EMAIL_HOST_USER = _env('SMTP_USERNAME', '')
 EMAIL_HOST_PASSWORD = _env('SMTP_PASSWORD', '')
 EMAIL_USE_TLS = _env('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = _env('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_TIMEOUT = int(_env('EMAIL_TIMEOUT', '20'))
 DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@isezerano.com')
 ADS_INQUIRY_EMAIL = _env('ADS_INQUIRY_EMAIL', DEFAULT_FROM_EMAIL)
 
@@ -223,6 +224,11 @@ CORS_ALLOWED_ORIGINS = [
     if o.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in _env('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if o.strip()
+]
 
 # --- REST Framework -----------------------------------------------------------
 
@@ -284,6 +290,16 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 X_FRAME_OPTIONS = 'DENY'
+
+# --- Celery -------------------------------------------------------------------
+
+CELERY_BROKER_URL = _env('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # --- Logging ------------------------------------------------------------------
 

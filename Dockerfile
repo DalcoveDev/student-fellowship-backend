@@ -32,6 +32,7 @@ COPY . .
 
 # Ensure media directory exists and is writable
 RUN mkdir -p /app/media /app/staticfiles && \
+    chmod +x /app/entrypoint.sh && \
     chown -R appuser:appuser /app
 
 USER appuser
@@ -42,13 +43,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/v1/health/ || exit 1
 
-# Collect static files at build time (SECRET_KEY needed but value irrelevant)
-RUN SECRET_KEY=build-placeholder python manage.py collectstatic --no-input 2>/dev/null || true
-
-# Run with gunicorn
-CMD ["gunicorn", "config.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "3", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+# Migrations and collectstatic run when the web container starts.
+# Celery overrides this command in Docker Compose and does not race migrations.
+CMD ["/app/entrypoint.sh"]
