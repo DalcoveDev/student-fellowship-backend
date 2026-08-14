@@ -1,0 +1,54 @@
+# ---- Stage 1: Build dependencies ----
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Install system deps for psycopg2
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# ---- Stage 2: Production image ----
+FROM python:3.12-slim
+
+# Security: run as non-root user
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+
+WORKDIR /app
+
+# Install only runtime libpq (no gcc)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libpq5 curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy installed Python packages from builder
+COPY --from=builder /install /usr/local
+
+# Copy application code
+COPY . .
+
+# Ensure media directory exists and is writable
+RUN mkdir -p /app/media /app/staticfiles && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health/ || exit 1
+
+# Collect static files at build time (SECRET_KEY needed but value irrelevant)
+RUN SECRET_KEY=build-placeholder python manage.py collectstatic --no-input 2>/dev/null || true
+
+# Run with gunicorn
+CMD ["gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "3", \
+     "--timeout", "120", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

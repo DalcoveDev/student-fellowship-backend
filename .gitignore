@@ -1,0 +1,17 @@
+# Python caches & compiles
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local database files
+db.sqlite3
+
+# Local credentials
+.env
+
+# Media uploads and collected static directories
+media/
+staticfiles/
+
+# Logs
+*.log

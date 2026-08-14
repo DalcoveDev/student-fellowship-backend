@@ -1,0 +1,34 @@
+# =============================================================================
+# Isezerano Backend — Direct Dependencies Only
+# Transitive deps are managed by pip automatically.
+# =============================================================================
+
+# Core Framework
+Django==6.0.7
+djangorestframework==3.17.1
+djangorestframework_simplejwt==5.5.1
+
+# Database
+psycopg2-binary==2.9.10
+dj-database-url==3.1.2
+
+# API Utilities
+django-cors-headers==4.9.0
+django-filter==26.1
+
+# Media & Storage
+Pillow==11.2.1
+django-imagekit==6.1.0
+cloudinary==1.44.1
+django-cloudinary-storage==0.3.0
+
+# Audit & History
+django-simple-history==3.12.0
+
+# Background Tasks
+celery==5.6.3
+redis==8.0.1
+
+# Production Server
+gunicorn
+whitenoise
