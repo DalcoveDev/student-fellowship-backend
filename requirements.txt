@@ -32,3 +32,9 @@ redis==8.0.1
 # Production Server
 gunicorn
 whitenoise
+
+# Testing & CI
+flake8
+isort
+coverage
+pip-audit

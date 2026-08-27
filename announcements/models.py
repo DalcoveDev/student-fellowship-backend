@@ -27,3 +27,10 @@ class Announcement(models.Model):
 
     def __str__(self):
         return f"[{self.get_announcement_type_display()}] {self.title} - {self.organization_name}"
+
+    def save(self, *args, **kwargs):
+        if self.published_date and hasattr(self.published_date, 'date'):
+            self.published_date = self.published_date.date()
+        if self.deadline_date and hasattr(self.deadline_date, 'date'):
+            self.deadline_date = self.deadline_date.date()
+        super().save(*args, **kwargs)

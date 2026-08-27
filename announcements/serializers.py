@@ -21,3 +21,10 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.attachment.url)
         return obj.attachment.url
+
+    def to_representation(self, instance):
+        if hasattr(instance, 'published_date') and instance.published_date and hasattr(instance.published_date, 'date'):
+            instance.published_date = instance.published_date.date()
+        if hasattr(instance, 'deadline_date') and instance.deadline_date and hasattr(instance.deadline_date, 'date'):
+            instance.deadline_date = instance.deadline_date.date()
+        return super().to_representation(instance)
