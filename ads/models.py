@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings
 from articles.models import Article
+
 
 class AdSlot(models.Model):
     PLACEMENT_CHOICES = (
@@ -20,7 +20,7 @@ class AdSlot(models.Model):
         ('flyer_1', 'Flyer Ad 1 (Square/Portrait)'),
         ('flyer_2', 'Flyer Ad 2 (Square/Portrait)'),
         ('flyer_3', 'Flyer Ad 3 (Square/Portrait)'),
-        
+
         # Legacy/Other Placements
         ('header-banner', 'Legacy Header Banner (970x250)'),
         ('sidebar-rail', 'Legacy Sidebar Rail (300x600)'),
@@ -36,7 +36,7 @@ class AdSlot(models.Model):
     html_content = models.TextField(blank=True, help_text="For custom HTML/JS ad codes like Google Adsense")
     target_url = models.URLField(blank=True)
     cta_text = models.CharField(max_length=50, default='Learn More')
-    
+
     # Sponsored Rich Content fields
     sponsored_logo = models.ImageField(upload_to='ads/logos/', null=True, blank=True)
     sponsored_headline = models.CharField(max_length=255, blank=True)
@@ -45,7 +45,7 @@ class AdSlot(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     priority = models.PositiveIntegerField(default=0, help_text="Higher priority ads are served first")
-    
+
     impressions = models.PositiveIntegerField(default=0)
     clicks = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -59,6 +59,7 @@ class AdSlot(models.Model):
             return 0.0
         return round((self.clicks / self.impressions) * 100, 2)
 
+
 class AnalyticsEvent(models.Model):
     EVENT_TYPE_CHOICES = (
         ('pageview', 'Page View'),
@@ -67,9 +68,11 @@ class AnalyticsEvent(models.Model):
     )
 
     event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
-    article = models.ForeignKey(Article, on_delete=models.SET_NULL, null=True, blank=True, related_name='analytics_events')
-    ad_slot = models.ForeignKey(AdSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='analytics_events')
-    
+    article = models.ForeignKey(Article, on_delete=models.SET_NULL, null=True,
+                                blank=True, related_name='analytics_events')
+    ad_slot = models.ForeignKey(AdSlot, on_delete=models.SET_NULL, null=True,
+                                blank=True, related_name='analytics_events')
+
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(null=True, blank=True)
     referrer = models.TextField(null=True, blank=True)

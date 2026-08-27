@@ -3,6 +3,7 @@ from .models import MediaAsset
 from .serializers import MediaAssetSerializer
 from users.permissions import IsJournalist
 
+
 class CMSMediaAssetViewSet(viewsets.ModelViewSet):
     queryset = MediaAsset.objects.all().order_by('-uploaded_at')
     serializer_class = MediaAssetSerializer

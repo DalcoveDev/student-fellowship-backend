@@ -3,7 +3,6 @@ import logging
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.utils import timezone
 from .models import Subscriber, NewsletterCampaign
 from .serializers import SubscriberSerializer, NewsletterCampaignSerializer
 from .tasks import (

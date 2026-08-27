@@ -11,10 +11,10 @@ from rest_framework.response import Response
 from .models import Category, Tag, Article, ArticleRevision, Comment
 from .serializers import (
     CategorySerializer, TagSerializer, ArticleListSerializer,
-    ArticleDetailSerializer, CommentSerializer, ArticleRevisionSerializer,
+    ArticleDetailSerializer, CommentSerializer,
     CMSArticleWriteSerializer, CMSCommentSerializer,
 )
-from users.permissions import IsJournalist, IsEditor, IsAdmin
+from users.permissions import IsJournalist, IsEditor
 
 logger = logging.getLogger(__name__)
 

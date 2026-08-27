@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from articles.models import Category
 from ads.models import AdSlot
 
+
 class HomepageLayout(models.Model):
     SECTION_CHOICES = (
         ('hero', 'Hero Lead Story Section'),
@@ -26,18 +27,35 @@ class HomepageLayout(models.Model):
     page = models.CharField(max_length=50, default='home', db_index=True)
     section_type = models.CharField(max_length=30, choices=SECTION_CHOICES)
     order = models.PositiveIntegerField(default=0)
-    article_limit = models.PositiveIntegerField(default=5, null=True, blank=True, help_text="Number of articles to fetch for this section")
-    
+    article_limit = models.PositiveIntegerField(
+        default=5,
+        null=True,
+        blank=True,
+        help_text="Number of articles to fetch for this section")
+
     title = models.CharField(max_length=200, blank=True)
     content = models.TextField(blank=True, help_text="HTML/markdown content for text sections or one-pagers")
-    video_url = models.CharField(max_length=500, blank=True, help_text="Single or multiple comma-separated YouTube/video URLs for video widget")
-    display_variant = models.CharField(max_length=50, blank=True, default='default', help_text="Visual variant / template")
-    
+    video_url = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Single or multiple comma-separated YouTube/video URLs for video widget")
+    display_variant = models.CharField(
+        max_length=50,
+        blank=True,
+        default='default',
+        help_text="Visual variant / template")
+
     # Specific fields for conditional sections
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, help_text="Legacy single category reference")
-    categories = models.ManyToManyField(Category, blank=True, related_name='layout_sections', help_text="One or multiple categories to fetch content from")
-    ad_slot = models.ForeignKey(AdSlot, on_delete=models.SET_NULL, null=True, blank=True, help_text="Required for Advertisement Banner Block sections")
-    
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True,
+                                 blank=True, help_text="Legacy single category reference")
+    categories = models.ManyToManyField(
+        Category,
+        blank=True,
+        related_name='layout_sections',
+        help_text="One or multiple categories to fetch content from")
+    ad_slot = models.ForeignKey(AdSlot, on_delete=models.SET_NULL, null=True, blank=True,
+                                help_text="Required for Advertisement Banner Block sections")
+
     is_visible = models.BooleanField(default=True)
 
     class Meta:
@@ -53,11 +71,12 @@ class HomepageLayout(models.Model):
             desc += f" ({self.ad_slot.name})"
         return f"{self.page} - {self.order}. {desc}"
 
+
 class SiteSetting(models.Model):
     site_name = models.CharField(max_length=100, default='Isezerano')
     logo_light = models.ImageField(upload_to='settings/', null=True, blank=True)
     logo_dark = models.ImageField(upload_to='settings/', null=True, blank=True)
-    
+
     # Color overrides
     primary_color = models.CharField(max_length=7, default='#2F6DF6')
     secondary_color = models.CharField(max_length=7, default='#F0F4FF')
@@ -78,9 +97,15 @@ class SiteSetting(models.Model):
 
     # Maintenance Mode
     maintenance_mode = models.BooleanField(default=False)
-    maintenance_message = models.TextField(blank=True, default="We are currently performing scheduled system updates and maintenance. We will be back online shortly.")
+    maintenance_message = models.TextField(
+        blank=True,
+        default=(
+            "We are currently performing scheduled system updates and "
+            "maintenance. We will be back online shortly."
+        ),
+    )
     maintenance_contact_email = models.EmailField(blank=True, default="contact@isezerano.com")
-    
+
     # Contact Information
     contact_phone = models.CharField(max_length=50, blank=True, default="+250 788 000 000")
     contact_email = models.EmailField(blank=True, default="info@isezerano.rw")
@@ -94,7 +119,7 @@ class SiteSetting(models.Model):
     youtube_url = models.URLField(blank=True)
     linkedin_url = models.URLField(blank=True)
     tiktok_url = models.URLField(blank=True)
-    
+
     footer_text = models.TextField(blank=True, default="© 2026 Isezerano. Futuristic Digital Journalism.")
     footer_recent_limit = models.PositiveIntegerField(default=3)
     homepage_limit = models.PositiveIntegerField(default=5)
@@ -110,6 +135,7 @@ class SiteSetting(models.Model):
 
     def __str__(self):
         return f"{self.site_name} Settings"
+
 
 class MenuItem(models.Model):
     MENU_TYPE_CHOICES = (
@@ -130,22 +156,25 @@ class MenuItem(models.Model):
     title = models.CharField(max_length=100, help_text="Default display title (English)")
     title_rw = models.CharField(max_length=100, blank=True, help_text="Kinyarwanda translation")
     title_fr = models.CharField(max_length=100, blank=True, help_text="French translation")
-    
+
     parent = models.ForeignKey(
-        'self', 
-        on_delete=models.CASCADE, 
-        null=True, 
-        blank=True, 
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='children',
         help_text="Parent menu item for sub-menus and sub-sub-menus"
     )
 
     menu_type = models.CharField(max_length=20, choices=MENU_TYPE_CHOICES, default='custom')
-    page_slug = models.CharField(max_length=100, blank=True, help_text="Page route (e.g. home, about-us, services, contact, blog-feed)")
+    page_slug = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Page route (e.g. home, about-us, services, contact, blog-feed)")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='menu_items')
     article_slug = models.CharField(max_length=255, blank=True, help_text="Slug of the article to link to")
     custom_url = models.CharField(max_length=500, blank=True, help_text="Internal path or full external URL")
-    
+
     position = models.CharField(max_length=30, choices=POSITION_CHOICES, default='header_main')
     order = models.PositiveIntegerField(default=0)
     is_visible = models.BooleanField(default=True)
@@ -183,6 +212,7 @@ class MenuItem(models.Model):
             return self.custom_url
         return '/'
 
+
 class ContactInquiry(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -200,6 +230,7 @@ class ContactInquiry(models.Model):
     def __str__(self):
         return f"Inquiry from {self.name} - {self.subject}"
 
+
 class SocialLink(models.Model):
     PLATFORM_CHOICES = (
         ('facebook', 'Facebook'),
@@ -213,7 +244,10 @@ class SocialLink(models.Model):
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default='custom')
     custom_name = models.CharField(max_length=50, blank=True, help_text="Required for custom platform")
     url = models.URLField()
-    icon_name = models.CharField(max_length=30, default='link', help_text="Lucide icon name (e.g. facebook, twitter, instagram, link)")
+    icon_name = models.CharField(
+        max_length=30,
+        default='link',
+        help_text="Lucide icon name (e.g. facebook, twitter, instagram, link)")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -223,6 +257,7 @@ class SocialLink(models.Model):
         if self.platform == 'custom':
             return f"{self.custom_name}: {self.url}"
         return f"{self.platform}: {self.url}"
+
 
 class DailyVerse(models.Model):
     date = models.DateField(unique=True, help_text="Date for which this verse is shown")

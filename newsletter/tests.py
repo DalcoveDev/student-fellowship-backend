@@ -7,6 +7,7 @@ from newsletter.models import Subscriber, NewsletterCampaign
 
 User = get_user_model()
 
+
 class NewsletterTests(APITestCase):
     def setUp(self):
         self.admin = User.objects.create_superuser(
@@ -52,16 +53,16 @@ class NewsletterTests(APITestCase):
 
     def test_cms_subscriber_list_permissions(self):
         url = reverse('cms-subscribers-list')
-        
+
         # Anonymous
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        
+
         # Reader
         self.client.force_authenticate(user=self.reader)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
         # Editor
         self.client.force_authenticate(user=self.editor)
         response = self.client.get(url)
@@ -71,29 +72,29 @@ class NewsletterTests(APITestCase):
     def test_cms_campaign_crud(self):
         list_url = reverse('cms-campaigns-list')
         detail_url = reverse('cms-campaigns-detail', args=[self.campaign.id])
-        
+
         # Admin required for campaigns
         self.client.force_authenticate(user=self.editor)
         response = self.client.get(list_url)
         # Assuming IsAdmin permission on CMSNewsletterCampaignViewSet
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
         self.client.force_authenticate(user=self.admin)
-        
+
         # Read
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Create
         data = {'subject': 'New Campaign', 'body': 'Content'}
         response = self.client.post(list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Update
         update_data = {'subject': 'Updated Campaign', 'body': 'Content'}
         response = self.client.put(detail_url, update_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Delete
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

@@ -7,7 +7,6 @@ Security-hardened for production deployment.
 from pathlib import Path
 from datetime import timedelta
 import os
-import logging
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured

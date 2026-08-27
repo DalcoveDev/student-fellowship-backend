@@ -9,11 +9,12 @@ from .models import AdSlot
 
 User = get_user_model()
 
+
 class AdsModelTests(TestCase):
     def test_ctr_calculation_zero_impressions(self):
         now = timezone.now()
         ad = AdSlot.objects.create(
-            name='Test', placement='header_banner', 
+            name='Test', placement='header_banner',
             start_date=now, end_date=now + timedelta(days=1),
             impressions=0, clicks=5
         )
@@ -22,18 +23,19 @@ class AdsModelTests(TestCase):
     def test_ctr_calculation(self):
         now = timezone.now()
         ad = AdSlot.objects.create(
-            name='Test', placement='header_banner', 
+            name='Test', placement='header_banner',
             start_date=now, end_date=now + timedelta(days=1),
             impressions=1000, clicks=25
         )
         self.assertEqual(ad.ctr, 2.5)
+
 
 class AdsAPITests(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(username='admin', email='a@a.com', password='pw', role='admin')
         self.editor = User.objects.create_user(username='editor', email='e@a.com', password='pw', role='editor')
         self.reader = User.objects.create_user(username='reader', email='r@a.com', password='pw', role='reader')
-        
+
         now = timezone.now()
         self.ad = AdSlot.objects.create(
             name='Banner 1',
@@ -56,7 +58,7 @@ class AdsAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Banner 1')
-        
+
     def test_active_ad_public_normalise_placement(self):
         url = reverse('active-ad', kwargs={'placement': 'header-banner'})
         response = self.client.get(url)

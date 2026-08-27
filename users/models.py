@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('reader', 'Reader'),
@@ -8,7 +9,7 @@ class User(AbstractUser):
         ('editor', 'Editor'),
         ('admin', 'Admin/Superadmin'),
     )
-    
+
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='reader')
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(blank=True, max_length=500)
@@ -33,4 +34,3 @@ class UserAuditLog(models.Model):
     def __str__(self):
         actor_name = self.actor.username if self.actor else "System"
         return f"{actor_name} performed {self.action} on {self.target_user.username} at {self.timestamp}"
-

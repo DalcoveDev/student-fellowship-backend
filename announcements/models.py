@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Announcement(models.Model):
     ANNOUNCEMENT_TYPES = (
         ('amasoko', 'Amasoko (Tenders)'),
@@ -17,7 +18,11 @@ class Announcement(models.Model):
     reference_number = models.CharField(max_length=100, blank=True, null=True)
     published_date = models.DateField(default=timezone.now)
     deadline_date = models.DateField(blank=True, null=True, help_text="Application or submission deadline")
-    attachment = models.FileField(upload_to='announcements/', blank=True, null=True, help_text="Optional PDF attachment")
+    attachment = models.FileField(
+        upload_to='announcements/',
+        blank=True,
+        null=True,
+        help_text="Optional PDF attachment")
     is_active = models.BooleanField(default=True)
 
     class Meta:

@@ -1,15 +1,16 @@
-from rest_framework import viewsets, generics, permissions, status
+from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from django.db import transaction
 from .models import HomepageLayout, SiteSetting, DailyVerse, SocialLink, ContactInquiry, MenuItem
 from .serializers import (
-    HomepageLayoutSerializer, SiteSettingSerializer, DailyVerseSerializer, 
+    HomepageLayoutSerializer, SiteSettingSerializer, DailyVerseSerializer,
     SocialLinkSerializer, ContactInquirySerializer, MenuItemSerializer, CMSMenuItemSerializer
 )
-from users.permissions import IsEditor, IsAdmin
+from users.permissions import IsEditor
 from django.utils import timezone
+
 
 class PublicHomepageLayoutView(generics.ListAPIView):
     serializer_class = HomepageLayoutSerializer
@@ -18,7 +19,12 @@ class PublicHomepageLayoutView(generics.ListAPIView):
 
     def get_queryset(self):
         page = self.request.query_params.get('page', 'home')
-        return HomepageLayout.objects.filter(is_visible=True, page=page).prefetch_related('categories').order_by('order', 'id')
+        return HomepageLayout.objects.filter(
+            is_visible=True,
+            page=page).prefetch_related('categories').order_by(
+            'order',
+            'id')
+
 
 class PublicSiteSettingView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -31,7 +37,10 @@ class PublicSiteSettingView(APIView):
                 'site_name': 'Isezerano',
                 'primary_color': '#2F6DF6',
                 'maintenance_mode': False,
-                'maintenance_message': 'We are currently performing scheduled system updates and maintenance. We will be back online shortly.',
+                'maintenance_message': (
+                    'We are currently performing scheduled system updates '
+                    'and maintenance. We will be back online shortly.'
+                ),
                 'maintenance_contact_email': 'contact@isezerano.com',
                 'contact_phone': '+250 788 000 000',
                 'contact_email': 'info@isezerano.rw',
@@ -42,6 +51,7 @@ class PublicSiteSettingView(APIView):
         serializer = SiteSettingSerializer(setting)
         return Response(serializer.data)
 
+
 class PublicMenuView(generics.ListAPIView):
     serializer_class = MenuItemSerializer
     permission_classes = (permissions.AllowAny,)
@@ -51,14 +61,16 @@ class PublicMenuView(generics.ListAPIView):
         position = self.request.query_params.get('position', 'header_main')
         # Only return top-level items (parent=None); children will be recursively serialized
         return MenuItem.objects.filter(
-            is_visible=True, 
-            position=position, 
+            is_visible=True,
+            position=position,
             parent=None
         ).prefetch_related('children', 'children__children', 'category').order_by('order', 'id')
+
 
 class ContactInquiryCreateView(generics.CreateAPIView):
     serializer_class = ContactInquirySerializer
     permission_classes = (permissions.AllowAny,)
+
 
 class CMSContactInquiryViewSet(viewsets.ModelViewSet):
     queryset = ContactInquiry.objects.all().order_by('-created_at')
@@ -66,6 +78,7 @@ class CMSContactInquiryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsEditor,)
 
 # ================= CMS API VIEWS =================
+
 
 class CMSHomepageLayoutViewSet(viewsets.ModelViewSet):
     serializer_class = HomepageLayoutSerializer
@@ -98,6 +111,7 @@ class CMSHomepageLayoutViewSet(viewsets.ModelViewSet):
                         HomepageLayout.objects.filter(id=item_id).update(**update_data)
         return Response({'status': 'success', 'message': 'Sections reordered successfully'})
 
+
 class CMSMenuItemViewSet(viewsets.ModelViewSet):
     serializer_class = CMSMenuItemSerializer
     permission_classes = (IsEditor,)
@@ -129,6 +143,7 @@ class CMSMenuItemViewSet(viewsets.ModelViewSet):
                         MenuItem.objects.filter(id=item_id).update(**update_data)
         return Response({'status': 'success', 'message': 'Menus reordered successfully'})
 
+
 class CMSSiteSettingViewSet(viewsets.ModelViewSet):
     queryset = SiteSetting.objects.all()
     serializer_class = SiteSettingSerializer
@@ -140,6 +155,7 @@ class CMSSiteSettingViewSet(viewsets.ModelViewSet):
         obj, created = SiteSetting.objects.get_or_create(id=1)
         return obj
 
+
 class DailyVerseTodayView(APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -149,7 +165,7 @@ class DailyVerseTodayView(APIView):
         if not verse:
             # Fallback to the latest verse if none for today
             verse = DailyVerse.objects.order_by('-date').first()
-            
+
         if not verse:
             return Response({
                 'verse_reference': 'Habakuki 2:3',
@@ -160,11 +176,13 @@ class DailyVerseTodayView(APIView):
         serializer = DailyVerseSerializer(verse)
         return Response(serializer.data)
 
+
 class CMSDailyVerseViewSet(viewsets.ModelViewSet):
     queryset = DailyVerse.objects.all()
     serializer_class = DailyVerseSerializer
     permission_classes = (IsEditor,)
     pagination_class = None
+
 
 class CMSSocialLinkViewSet(viewsets.ModelViewSet):
     queryset = SocialLink.objects.all()
@@ -172,10 +190,9 @@ class CMSSocialLinkViewSet(viewsets.ModelViewSet):
     permission_classes = (IsEditor,)
     pagination_class = None
 
+
 class PublicSocialLinkListView(generics.ListAPIView):
     queryset = SocialLink.objects.all().order_by('order')
     serializer_class = SocialLinkSerializer
     permission_classes = (permissions.AllowAny,)
     pagination_class = None  # Small dataset; always return plain array
-
-

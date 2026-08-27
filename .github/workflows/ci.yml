@@ -42,7 +42,7 @@ jobs:
           pip install flake8 isort
 
       - name: Run flake8
-        run: flake8 --max-line-length=120 --exclude=migrations,venv,.venv,env,staticfiles --ignore=E501,W503,W504,E302,E305,W293,W291,W391,E265,E303,F841,F401,F821 .
+        run: flake8 .
 
       - name: Check import ordering (isort)
         run: isort --check-only --diff --skip migrations --skip venv --skip .venv .

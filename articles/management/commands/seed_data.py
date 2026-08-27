@@ -11,6 +11,7 @@ from announcements.models import Announcement
 
 User = get_user_model()
 
+
 class Command(BaseCommand):
     help = 'Seeds realistic, non-technical editorial content for Isezerano digital newspaper'
 
@@ -108,7 +109,7 @@ class Command(BaseCommand):
         business_cat = Category.objects.create(slug='business', name='Business', color_accent='#2a69ac', order=1)
         fashion_cat = Category.objects.create(slug='fashion', name='Fashion', color_accent='#df4d38', order=2)
         culture_cat = Category.objects.create(slug='culture', name='Culture', color_accent='#d8b13a', order=3)
-        tech_cat = Category.objects.create(slug='technology', name='Technology', color_accent='#2fb16b', order=4)
+        Category.objects.create(slug='technology', name='Technology', color_accent='#2fb16b', order=4)
         design_cat = Category.objects.create(slug='design', name='Design', color_accent='#df4d38', order=5)
         nature_cat = Category.objects.create(slug='nature', name='Nature', color_accent='#8e5ab1', order=6)
         health_cat = Category.objects.create(slug='health', name='Health', color_accent='#2394ac', order=7)
@@ -117,7 +118,14 @@ class Command(BaseCommand):
 
         # 3. Create Tags
         self.stdout.write('- Creating tags...')
-        tags_list = ['Sustainability', 'Local Business', 'Art Galleries', 'Creative Office', 'Conservation', 'Wellbeing', 'Summer Style']
+        tags_list = [
+            'Sustainability',
+            'Local Business',
+            'Art Galleries',
+            'Creative Office',
+            'Conservation',
+            'Wellbeing',
+            'Summer Style']
         tags_dict = {}
         for tag_name in tags_list:
             tag = Tag.objects.create(slug=slugify(tag_name), name=tag_name)
@@ -125,7 +133,7 @@ class Command(BaseCommand):
 
         # 4. Create Articles
         self.stdout.write('- Creating articles...')
-        
+
         # Article 1: Lead Hero (Design/Architecture)
         art1 = Article.objects.create(
             slug='clean-grid-creative-office-spaces',
@@ -145,8 +153,7 @@ class Command(BaseCommand):
                 'While collaborative tables are useful for group brainstorming, quiet individual workspaces '
                 'are equally critical. Architects are designing small, soundproof phone booths and '
                 'dedicated reading rooms where employees can focus on deep work without interruption. '
-                'This balance of social and private spaces creates a balanced workplace dynamic.'
-            ),
+                'This balance of social and private spaces creates a balanced workplace dynamic.'),
             cover_image='https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=800&auto=format&fit=crop',
             category=design_cat,
             author=journalist1,
@@ -156,8 +163,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=6,
             view_count=1240,
-            published_at=timezone.now() - datetime.timedelta(hours=2)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                hours=2))
         art1.tags.add(tags_dict['Creative Office'], tags_dict['Sustainability'])
 
         # Article 2: Business Card
@@ -172,8 +180,7 @@ class Command(BaseCommand):
                 '### Route Optimization Tools\n'
                 'In addition to cleaner vehicles, companies are utilizing advanced route planning software. '
                 'These systems analyze traffic grids in real-time, sending drivers on the most efficient paths '
-                'and preventing trucks from idling in neighborhood congestion blocks.'
-            ),
+                'and preventing trucks from idling in neighborhood congestion blocks.'),
             cover_image='https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
             category=business_cat,
             author=journalist2,
@@ -183,8 +190,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=4,
             view_count=872,
-            published_at=timezone.now() - datetime.timedelta(hours=6)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                hours=6))
         art2.tags.add(tags_dict['Local Business'], tags_dict['Sustainability'])
 
         # Article 3: Fashion Card
@@ -195,8 +203,7 @@ class Command(BaseCommand):
             body=(
                 'Sustainable fashion is no longer a niche market. Designers this summer are focusing heavily on '
                 'recyclable materials and ethical production chains. From organic cotton shirts to dresses '
-                'dyed with vegetable extracts, the emphasis is on durability and environmental impact.'
-            ),
+                'dyed with vegetable extracts, the emphasis is on durability and environmental impact.'),
             cover_image='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800&auto=format&fit=crop',
             category=fashion_cat,
             author=journalist1,
@@ -206,8 +213,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=5,
             view_count=521,
-            published_at=timezone.now() - datetime.timedelta(hours=12)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                hours=12))
         art3.tags.add(tags_dict['Summer Style'], tags_dict['Sustainability'])
 
         # Article 4: Nature Card
@@ -218,8 +226,7 @@ class Command(BaseCommand):
             body=(
                 'A joint study by local environmental groups has confirmed that upstate woodlands are undergoing '
                 'a major ecological recovery. By controlling traffic paths and replanting native seedlings, '
-                'biodiversity index scores have risen by twelve percent.'
-            ),
+                'biodiversity index scores have risen by twelve percent.'),
             cover_image='https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=800&auto=format&fit=crop',
             category=nature_cat,
             author=journalist2,
@@ -229,8 +236,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=7,
             view_count=988,
-            published_at=timezone.now() - datetime.timedelta(days=1)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                days=1))
         art4.tags.add(tags_dict['Conservation'])
 
         # Article 5: Culture Card (Premium)
@@ -242,8 +250,7 @@ class Command(BaseCommand):
                 'Museums around the world are undergoing a quiet revolution. By digitizing their historical galleries '
                 'using 3D laser scanners, fine art pieces can be studied by students anywhere in the world. '
                 'This preservation effort ensures that even if physical artifacts degrade over centuries, '
-                'their digital representations remain perfect for research.'
-            ),
+                'their digital representations remain perfect for research.'),
             cover_image='https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop',
             category=culture_cat,
             author=journalist1,
@@ -253,8 +260,9 @@ class Command(BaseCommand):
             is_premium=True,
             reading_time=6,
             view_count=612,
-            published_at=timezone.now() - datetime.timedelta(days=2)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                days=2))
         art5.tags.add(tags_dict['Art Galleries'])
 
         # Article 6: Health Card
@@ -266,8 +274,7 @@ class Command(BaseCommand):
                 'Sitting at a desk for eight hours takes a toll on physical health and mental focus. '
                 'Health practitioners are urging employees to take brief micro-breaks throughout the day. '
                 'Standing up, stretching, or simply looking away from screens for a few minutes helps '
-                'relax eyes and keeps energy levels balanced.'
-            ),
+                'relax eyes and keeps energy levels balanced.'),
             cover_image='https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=800&auto=format&fit=crop',
             category=health_cat,
             author=journalist2,
@@ -277,8 +284,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=3,
             view_count=1450,
-            published_at=timezone.now() - datetime.timedelta(days=3)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                days=3))
         art6.tags.add(tags_dict['Wellbeing'])
 
         # 5. Create Comments
@@ -297,7 +305,7 @@ class Command(BaseCommand):
         )
 
         # Sports Articles
-        art_sports1 = Article.objects.create(
+        Article.objects.create(
             slug='rayon-sports-defeat-apr-fc',
             title='Rayon Sports yatsinze APR FC mu mukino w’amateka w’igikombe cy’intwari',
             subtitle='Rayon Sports yerekanye umukino ukomeye itsinda APR FC ibitego 2-1 mu mukino wabereye kuri Stade Amahoro imbere y’abafana ibihumbi.',
@@ -305,8 +313,7 @@ class Command(BaseCommand):
                 'Umukino w’ishiraniro wahuje amakipe abiri akomeye mu Rwanda, Rayon Sports na APR FC, '
                 'warangiye Rayon Sports yihagazeho yegukana intsinzi. APR FC niyo yafunguye izamu ku munota wa 15 '
                 'ku gitego cyatsinzwe na Mugisha Gilbert, ariko Rayon Sports yishyura binyuze kuri Luvumbu '
-                'ku munota wa 40, mbere y’uko rutahizamu mushya atsinda igitego cy’intsinzi mu gice cya kabiri.'
-            ),
+                'ku munota wa 40, mbere y’uko rutahizamu mushya atsinda igitego cy’intsinzi mu gice cya kabiri.'),
             cover_image='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800&auto=format&fit=crop',
             category=sports_cat,
             author=journalist1,
@@ -316,17 +323,17 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=4,
             view_count=2300,
-            published_at=timezone.now() - datetime.timedelta(minutes=30)
-        )
-        art_sports2 = Article.objects.create(
+            published_at=timezone.now() -
+            datetime.timedelta(
+                minutes=30))
+        Article.objects.create(
             slug='kigali-peace-marathon-registration-open',
             title='Kigali Peace Marathon 2026: Iyandikisha ryamaze gutangira ku mugaragaro',
             subtitle='Minisiteri ya Siporo yatangaje ko imyiteguro igeze kure kandi ko abasiganwa bashobora kwiyandikisha binyuze ku rubuga rwa interineti.',
             body=(
                 'Kigali International Peace Marathon igiye kuba ku nshuro ya 21, yiteguye kwakira abasiganwa '
                 'barenga ibihumbi icumi baturutse mu bihugu bitandukanye by’isi. Abashaka kwitabira '
-                'bafite amahirwe yo kwiyandikisha mu cyiciro cya Half Marathon (21km) cyangwa Full Marathon (42km).'
-            ),
+                'bafite amahirwe yo kwiyandikisha mu cyiciro cya Half Marathon (21km) cyangwa Full Marathon (42km).'),
             cover_image='https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=800&auto=format&fit=crop',
             category=sports_cat,
             author=journalist2,
@@ -336,19 +343,19 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=3,
             view_count=980,
-            published_at=timezone.now() - datetime.timedelta(hours=4)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                hours=4))
 
         # Faith Article
-        art_faith1 = Article.objects.create(
+        Article.objects.create(
             slug='isano-y-ukwemera-no-kubana-neza',
             title='Isano iri hagati y’Ukwemera n’Umubano Mwiza mu Muryango Nyarwanda',
             subtitle='Abayobozi b’amadini atandukanye bagaragaje ko ukwemera nyakuri kugomba kuranga umuntu mu bikorwa bya buri munsi birimo amahoro n’ubwiyunge.',
             body=(
                 'Mu nama yahuje abahagarariye amadini n’amatorero mu Rwanda, hagarutswe ku ruhare rw’inyigisho '
                 'z’iyobokamana mu kubaka umuryango utekanye kandi utarangwamo amakimbirane. Hagaragajwe ko '
-                'amasengesho adaherekejwe n’ibikorwa by’urukundo n’ubworoherane nta mumaro bifitiye sosiyete.'
-            ),
+                'amasengesho adaherekejwe n’ibikorwa by’urukundo n’ubworoherane nta mumaro bifitiye sosiyete.'),
             cover_image='https://images.unsplash.com/photo-1438029071396-1e831a7fa6d8?q=80&w=800&auto=format&fit=crop',
             category=faith_cat,
             author=journalist1,
@@ -358,8 +365,9 @@ class Command(BaseCommand):
             is_premium=False,
             reading_time=5,
             view_count=740,
-            published_at=timezone.now() - datetime.timedelta(hours=8)
-        )
+            published_at=timezone.now() -
+            datetime.timedelta(
+                hours=8))
 
         # 5. Create Comments
         self.stdout.write('- Creating comments...')
@@ -379,15 +387,42 @@ class Command(BaseCommand):
         # 6. Create Ad Slots (Wireframe-Accurate Placements)
         self.stdout.write('- Creating ad slots...')
         ad_slots = [
-            ('header_banner', 'Qatar Airways Leaderboard', 'https://example.com/airline', 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=800&auto=format&fit=crop'),
-            ('hero_sidebar', 'Real Estate Skyscraper', 'https://example.com/property', 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=800&auto=format&fit=crop'),
-            ('daily_verse_sidebar', 'Christian Book Store Ad', 'https://example.com/books', 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800&auto=format&fit=crop'),
-            ('news_desk_sidebar', 'Modern Business Advisory', 'https://example.com/advisory', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800&auto=format&fit=crop'),
-            ('full_width_1', 'MTN Rwanda Data Promotion', 'https://example.com/mtn', 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'),
-            ('full_width_2', 'BK Bank Cashless Campaign', 'https://example.com/bk', 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop'),
-            ('full_width_3', 'RwandAir Flight Promo', 'https://example.com/rwandair', 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800&auto=format&fit=crop'),
-            ('full_width_4', 'Visit Rwanda Tourism campaign', 'https://example.com/visit-rwanda', 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=800&auto=format&fit=crop'),
-            ('sports_sidebar', 'Kigali Arena Events Skyscraper', 'https://example.com/arena', 'https://images.unsplash.com/photo-1519766304817-4f37bda74a27?q=80&w=800&auto=format&fit=crop'),
+            ('header_banner',
+             'Qatar Airways Leaderboard',
+             'https://example.com/airline',
+             'https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=800&auto=format&fit=crop'),
+            ('hero_sidebar',
+             'Real Estate Skyscraper',
+             'https://example.com/property',
+             'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=800&auto=format&fit=crop'),
+            ('daily_verse_sidebar',
+             'Christian Book Store Ad',
+             'https://example.com/books',
+             'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800&auto=format&fit=crop'),
+            ('news_desk_sidebar',
+             'Modern Business Advisory',
+             'https://example.com/advisory',
+             'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800&auto=format&fit=crop'),
+            ('full_width_1',
+             'MTN Rwanda Data Promotion',
+             'https://example.com/mtn',
+             'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'),
+            ('full_width_2',
+             'BK Bank Cashless Campaign',
+             'https://example.com/bk',
+             'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop'),
+            ('full_width_3',
+             'RwandAir Flight Promo',
+             'https://example.com/rwandair',
+             'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800&auto=format&fit=crop'),
+            ('full_width_4',
+             'Visit Rwanda Tourism campaign',
+             'https://example.com/visit-rwanda',
+             'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=800&auto=format&fit=crop'),
+            ('sports_sidebar',
+             'Kigali Arena Events Skyscraper',
+             'https://example.com/arena',
+             'https://images.unsplash.com/photo-1519766304817-4f37bda74a27?q=80&w=800&auto=format&fit=crop'),
         ]
         for placement, name, target, img in ad_slots:
             AdSlot.objects.create(
@@ -440,11 +475,12 @@ class Command(BaseCommand):
             verse_text_english='For the revelation awaits an appointed time; it speaks of the end and will not prove false. Though it linger, wait for it; it will certainly come and will not delay.'
         )
         DailyVerse.objects.create(
-            date=timezone.localdate() - datetime.timedelta(days=1),
+            date=timezone.localdate() -
+            datetime.timedelta(
+                days=1),
             verse_reference='Yohana 3:16',
             verse_text_kinyarwanda='Kuko Imana yakunze abari mu isi cyane, byatumye itanga Umwana wayo w’ikinege kugira ngo umwizera wese atarimbuka, ahubwo ahabwe ubugingo buhoraho.',
-            verse_text_english='For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.'
-        )
+            verse_text_english='For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.')
 
         # 6.6 Seed Announcements
         self.stdout.write('- Creating Announcements...')
@@ -454,36 +490,40 @@ class Command(BaseCommand):
             announcement_type='amasoko',
             organization_name='QATAR CHARITY RWANDA',
             reference_number='QC/RW/ED/044/2026',
-            deadline_date=timezone.localdate() + datetime.timedelta(days=12),
-            is_active=True
-        )
+            deadline_date=timezone.localdate() +
+            datetime.timedelta(
+                days=12),
+            is_active=True)
         Announcement.objects.create(
             title='GUSHAKA ABASEMUZI B’INDIMI EBYIRI (IKINYARWANDA NA ICYONGEREZA)',
             body='BPR Bank Rwanda Plc irashaka gutanga akazi ku basemuzi b’indimi (Ikinyarwanda - Icyongereza). Abifuza gupiganwa bagomba kuba bafite Impamyabumenyi y’icyiciro cya kabiri cya Kaminuza mu zose cyangwa bijyanye...',
             announcement_type='akazi',
             organization_name='BPR Bank Rwanda Plc',
             reference_number='BPR/HR/2026/09',
-            deadline_date=timezone.localdate() + datetime.timedelta(days=8),
-            is_active=True
-        )
+            deadline_date=timezone.localdate() +
+            datetime.timedelta(
+                days=8),
+            is_active=True)
         Announcement.objects.create(
             title='URUBANZA RWA MUKAMANA MARIE LOUISE NA GATERA JEAN BAPTISTE',
             body='Urukiko Rwisumbuye rwa Nyarugenge ruramenyesha ko urubanza rwa Mukamana Marie Louise na Gatera Jean Baptiste ku mikoreshereze y’umutungo ruzasomwa kuwa 20 Nyakanga 2026 saa tatu z’igitondo...',
             announcement_type='ibyemezo_by_urukiko',
             organization_name='Urukiko Rwisumbuye rwa Nyarugenge',
             reference_number='RAC/0042/19',
-            deadline_date=timezone.localdate() + datetime.timedelta(days=7),
-            is_active=True
-        )
+            deadline_date=timezone.localdate() +
+            datetime.timedelta(
+                days=7),
+            is_active=True)
         Announcement.objects.create(
             title='GUHINDURA AMAKuru y’Amazina yose mu mategeko',
             body='Umusezero Jean Claude uramenyesha ko yifuza guhindura amazina akitwa Umusezero Jean d’Amour mu bitabo by’irangamimerere ku mpamvu z’akazi no guhuza impamyabumenyi ze zose...',
             announcement_type='guhindura_amazina',
             organization_name='Irangamimerere y’Umujyi wa Kigali',
             reference_number='CIV/2026/001',
-            deadline_date=timezone.localdate() + datetime.timedelta(days=20),
-            is_active=True
-        )
+            deadline_date=timezone.localdate() +
+            datetime.timedelta(
+                days=20),
+            is_active=True)
 
         # 7. Homepage Layouts
         self.stdout.write('- Creating homepage layout configuration...')
@@ -516,14 +556,27 @@ class Command(BaseCommand):
 
         # 10. Social Links
         self.stdout.write('- Seeding default social links...')
-        SocialLink.objects.create(platform='facebook', url='https://facebook.com/isezerano', icon_name='facebook', order=0)
-        SocialLink.objects.create(platform='twitter', url='https://twitter.com/isezerano', icon_name='twitter', order=1)
-        SocialLink.objects.create(platform='instagram', url='https://instagram.com/isezerano', icon_name='instagram', order=2)
-        SocialLink.objects.create(platform='youtube', url='https://youtube.com/isezerano', icon_name='youtube', order=3)
+        SocialLink.objects.create(
+            platform='facebook',
+            url='https://facebook.com/isezerano',
+            icon_name='facebook',
+            order=0)
+        SocialLink.objects.create(
+            platform='twitter',
+            url='https://twitter.com/isezerano',
+            icon_name='twitter',
+            order=1)
+        SocialLink.objects.create(
+            platform='instagram',
+            url='https://instagram.com/isezerano',
+            icon_name='instagram',
+            order=2)
+        SocialLink.objects.create(
+            platform='youtube',
+            url='https://youtube.com/isezerano',
+            icon_name='youtube',
+            order=3)
 
         self.stdout.write('Database successfully seeded!')
 
-
-
-
-        #https://unsplash.com/photos/man-in-blue-and-orange-jersey-shirt-running-on-green-grass-field-during-daytime-i8XiabUW3mw
+        # https://unsplash.com/photos/man-in-blue-and-orange-jersey-shirt-running-on-green-grass-field-during-daytime-i8XiabUW3mw

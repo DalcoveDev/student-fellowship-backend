@@ -9,6 +9,7 @@ from articles.models import Category
 
 User = get_user_model()
 
+
 class LayoutTests(APITestCase):
     def setUp(self):
         self.admin = User.objects.create_superuser(
@@ -23,16 +24,19 @@ class LayoutTests(APITestCase):
             password='password123',
             role='editor'
         )
-        
+
         self.site_setting = SiteSetting.objects.create(site_name='Test Site')
-        
+
         self.category = Category.objects.create(name='Test Category', slug='test-category')
-        
+
         self.menu_item_page = MenuItem.objects.create(title='Page', menu_type='page', page_slug='about')
-        self.menu_item_category = MenuItem.objects.create(title='Category', menu_type='category', category=self.category)
-        self.menu_item_article = MenuItem.objects.create(title='Article', menu_type='article', article_slug='test-article')
-        self.menu_item_custom = MenuItem.objects.create(title='Custom', menu_type='custom', custom_url='https://example.com')
-        
+        self.menu_item_category = MenuItem.objects.create(
+            title='Category', menu_type='category', category=self.category)
+        self.menu_item_article = MenuItem.objects.create(
+            title='Article', menu_type='article', article_slug='test-article')
+        self.menu_item_custom = MenuItem.objects.create(
+            title='Custom', menu_type='custom', custom_url='https://example.com')
+
         self.today = timezone.now().date()
         self.daily_verse = DailyVerse.objects.create(
             date=self.today,
@@ -40,14 +44,14 @@ class LayoutTests(APITestCase):
             verse_text_kinyarwanda='Mu ntangiriro Jambo yariho',
             verse_text_english='In the beginning was the Word'
         )
-        
+
         self.layout_section = HomepageLayout.objects.create(
             page='home',
             section_type='hero',
             title='Main Hero',
             order=1
         )
-        
+
         self.social_link = SocialLink.objects.create(
             platform='facebook',
             url='https://facebook.com/test'
@@ -117,13 +121,13 @@ class LayoutTests(APITestCase):
     def test_cms_layout_crud(self):
         list_url = reverse('cms-layout-list')
         detail_url = reverse('cms-layout-detail', args=[self.layout_section.id])
-        
+
         self.client.force_authenticate(user=self.editor)
-        
+
         # Read
         response = self.client.get(list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # Create
         data = {
             'page': 'home',
@@ -132,7 +136,7 @@ class LayoutTests(APITestCase):
         }
         response = self.client.post(list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Update
         update_data = {
             'page': 'home',
@@ -145,7 +149,7 @@ class LayoutTests(APITestCase):
     def test_cms_settings_update(self):
         self.client.force_authenticate(user=self.editor)
         detail_url = reverse('cms-settings-detail', args=[self.site_setting.pk])
-        
+
         update_data = {
             'site_name': 'Updated Site Name'
         }
@@ -154,11 +158,11 @@ class LayoutTests(APITestCase):
 
     def test_cms_permissions(self):
         layout_url = reverse('cms-layout-list')
-        
+
         # Anonymous
         response = self.client.get(layout_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        
+
         # Reader
         reader = User.objects.create_user(username='reader', email='r@e.com', password='p', role='reader')
         self.client.force_authenticate(user=reader)

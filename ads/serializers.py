@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import AdSlot, AnalyticsEvent
 
+
 class AdSlotSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, allow_null=True)
     sponsored_logo = serializers.ImageField(required=False, allow_null=True)
@@ -8,7 +9,7 @@ class AdSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdSlot
         fields = (
-            'id', 'name', 'placement', 'image', 'html_content', 'target_url', 
+            'id', 'name', 'placement', 'image', 'html_content', 'target_url',
             'cta_text', 'sponsored_logo', 'sponsored_headline', 'sponsored_video_url',
             'start_date', 'end_date', 'priority', 'impressions', 'clicks', 'is_active', 'ctr'
         )
@@ -28,6 +29,7 @@ class AdSlotSerializer(serializers.ModelSerializer):
                 else:
                     ret[field] = file_field.url
         return ret
+
 
 class AnalyticsEventSerializer(serializers.ModelSerializer):
     class Meta:

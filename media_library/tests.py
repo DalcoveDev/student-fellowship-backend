@@ -1,4 +1,3 @@
-import os
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -75,16 +74,16 @@ class MediaAssetAPITest(APITestCase):
             b'\x89PNG\r\n\x1a\n' + b'\x00' * 100,
             content_type='image/png'
         )
-        
+
         response = self.client.post(self.list_url, {
             'file': image,
             'caption': 'A test image'
         }, format='multipart')
-        
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(MediaAsset.objects.count(), 1)
         self.assertEqual(MediaAsset.objects.first().caption, 'A test image')
-        
+
         # Test List
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

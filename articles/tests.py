@@ -8,6 +8,7 @@ from .models import Article, Category, Comment
 
 User = get_user_model()
 
+
 class ArticleModelTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='author', email='a@a.com', password='pw', role='journalist')
@@ -16,12 +17,12 @@ class ArticleModelTests(TestCase):
     def test_article_slug_auto_generation(self):
         article = Article.objects.create(title='Hello World Test', author=self.user)
         self.assertEqual(article.slug, 'hello-world-test')
-        
+
     def test_article_reading_time_calculation(self):
         body = "word " * 400
         article = Article.objects.create(title='Long Article', body=body, author=self.user)
         self.assertEqual(article.reading_time, 2)
-        
+
     def test_published_at_auto_set(self):
         article = Article.objects.create(title='Draft', author=self.user, status='draft')
         self.assertIsNone(article.published_at)
@@ -37,11 +38,13 @@ class ArticleModelTests(TestCase):
 
 class ArticleAPITests(APITestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser(username='admin', email='ad@m.com', password='pw', role='admin')
+        self.admin_user = User.objects.create_superuser(
+            username='admin', email='ad@m.com', password='pw', role='admin')
         self.editor = User.objects.create_user(username='editor', email='ed@m.com', password='pw', role='editor')
-        self.journalist = User.objects.create_user(username='journo', email='j@m.com', password='pw', role='journalist')
+        self.journalist = User.objects.create_user(
+            username='journo', email='j@m.com', password='pw', role='journalist')
         self.reader = User.objects.create_user(username='reader', email='r@m.com', password='pw', role='reader')
-        
+
         self.category = Category.objects.create(name='Tech', slug='tech')
         self.article = Article.objects.create(
             title='Tech News',
@@ -141,7 +144,7 @@ class ArticleAPITests(APITestCase):
         draft.refresh_from_db()
         self.assertEqual(draft.status, 'published')
         self.assertIsNotNone(draft.published_at)
-        
+
     def test_cms_reject_action_editor(self):
         review_article = Article.objects.create(title='In Review', author=self.journalist, status='in_review')
         self.client.force_authenticate(user=self.editor)

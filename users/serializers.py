@@ -11,7 +11,18 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'avatar', 'bio', 'twitter', 'github', 'website')
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'role',
+            'avatar',
+            'bio',
+            'twitter',
+            'github',
+            'website')
         read_only_fields = ('id', 'role')
 
 
@@ -50,7 +61,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 class CMSUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'avatar', 'bio', 'twitter', 'github', 'website', 'is_active', 'date_joined')
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'role',
+            'avatar',
+            'bio',
+            'twitter',
+            'github',
+            'website',
+            'is_active',
+            'date_joined')
         read_only_fields = ('id', 'date_joined')
 
     def validate_email(self, value):
@@ -68,7 +92,20 @@ class CMSUserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'role', 'is_active', 'avatar', 'bio', 'twitter', 'github', 'website')
+        fields = (
+            'id',
+            'username',
+            'email',
+            'password',
+            'first_name',
+            'last_name',
+            'role',
+            'is_active',
+            'avatar',
+            'bio',
+            'twitter',
+            'github',
+            'website')
 
     def validate_email(self, value):
         if value and User.objects.filter(email__iexact=value).exists():

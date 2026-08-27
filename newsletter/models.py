@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Subscriber(models.Model):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
@@ -7,6 +8,7 @@ class Subscriber(models.Model):
 
     def __str__(self):
         return f"{self.email} ({'Active' if self.is_active else 'Unsubscribed'})"
+
 
 class NewsletterCampaign(models.Model):
     STATUS_CHOICES = (

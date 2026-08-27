@@ -6,7 +6,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AdSlot, AnalyticsEvent
+from .models import AdSlot
 from .serializers import AdSlotSerializer, AnalyticsEventSerializer
 from newsletter.tasks import send_ad_kit_request
 from users.permissions import IsEditor

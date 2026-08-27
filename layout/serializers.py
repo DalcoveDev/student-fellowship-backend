@@ -5,11 +5,12 @@ from articles.models import Category
 from ads.serializers import AdSlotSerializer
 from ads.models import AdSlot
 
+
 class HomepageLayoutSerializer(serializers.ModelSerializer):
     category_details = CategorySerializer(source='category', read_only=True)
     categories_details = CategorySerializer(source='categories', many=True, read_only=True)
     ad_slot_details = AdSlotSerializer(source='ad_slot', read_only=True)
-    
+
     categories = serializers.PrimaryKeyRelatedField(many=True, queryset=Category.objects.all(), required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
     ad_slot = serializers.PrimaryKeyRelatedField(queryset=AdSlot.objects.all(), required=False, allow_null=True)
@@ -18,17 +19,18 @@ class HomepageLayoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomepageLayout
         fields = (
-            'id', 'page', 'section_type', 'order', 'category', 'categories', 'ad_slot', 
+            'id', 'page', 'section_type', 'order', 'category', 'categories', 'ad_slot',
             'is_visible', 'article_limit', 'title', 'content', 'video_url', 'display_variant',
             'category_details', 'categories_details', 'ad_slot_details'
         )
+
 
 class SiteSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteSetting
         fields = (
-            'site_name', 'logo_light', 'logo_dark', 
-            'primary_color', 'secondary_color', 'font_color', 'bg_color', 
+            'site_name', 'logo_light', 'logo_dark',
+            'primary_color', 'secondary_color', 'font_color', 'bg_color',
             'btn_bg_color', 'btn_text_color', 'link_color', 'hover_color',
             'font_family_body', 'font_family_headings', 'active_theme', 'custom_css',
             'maintenance_mode', 'maintenance_message', 'maintenance_contact_email',
@@ -36,6 +38,7 @@ class SiteSettingSerializer(serializers.ModelSerializer):
             'facebook_url', 'twitter_url', 'instagram_url', 'youtube_url', 'linkedin_url', 'tiktok_url',
             'footer_text', 'footer_recent_limit', 'homepage_limit'
         )
+
 
 class MenuItemSerializer(serializers.ModelSerializer):
     category_details = CategorySerializer(source='category', read_only=True)
@@ -57,6 +60,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
         children = obj.children.filter(is_visible=True).order_by('order', 'id')
         return MenuItemSerializer(children, many=True, context=self.context).data
 
+
 class CMSMenuItemSerializer(serializers.ModelSerializer):
     category_details = CategorySerializer(source='category', read_only=True)
     target_url = serializers.CharField(read_only=True)
@@ -71,20 +75,21 @@ class CMSMenuItemSerializer(serializers.ModelSerializer):
             'open_in_new_tab', 'icon_name', 'depth'
         )
 
+
 class ContactInquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInquiry
         fields = ('id', 'name', 'email', 'phone', 'subject', 'message', 'created_at', 'is_read')
         read_only_fields = ('id', 'created_at')
 
+
 class SocialLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialLink
         fields = ('id', 'platform', 'custom_name', 'url', 'icon_name', 'order')
 
+
 class DailyVerseSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyVerse
         fields = ('id', 'date', 'verse_reference', 'verse_text_kinyarwanda', 'verse_text_english', 'verse_text_french')
-
-

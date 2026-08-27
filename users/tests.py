@@ -6,6 +6,7 @@ from users.models import UserAuditLog
 
 User = get_user_model()
 
+
 class UserManagementTests(APITestCase):
     def setUp(self):
         # Create different operator users
@@ -27,7 +28,7 @@ class UserManagementTests(APITestCase):
             password='testpassword',
             role='reader'
         )
-        
+
         # Test targets
         self.target_user = User.objects.create_user(
             username='target_user',
@@ -61,7 +62,8 @@ class UserManagementTests(APITestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Should return all users
-        self.assertGreaterEqual(len(response.data.get('results', []) if isinstance(response.data, dict) else response.data), 4)
+        self.assertGreaterEqual(len(response.data.get('results', [])
+                                if isinstance(response.data, dict) else response.data), 4)
 
     def test_admin_create_user_success(self):
         self.client.force_authenticate(user=self.admin)
@@ -76,7 +78,7 @@ class UserManagementTests(APITestCase):
         }
         response = self.client.post(self.list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
         # Verify user created and password hashed
         new_user = User.objects.get(username='new_journalist')
         self.assertTrue(new_user.check_password('securepass123'))
@@ -92,7 +94,7 @@ class UserManagementTests(APITestCase):
 
     def test_create_user_validation(self):
         self.client.force_authenticate(user=self.admin)
-        
+
         # 1. Test duplicate username
         data = {
             'username': 'target_user',
@@ -117,7 +119,7 @@ class UserManagementTests(APITestCase):
 
     def test_admin_update_user(self):
         self.client.force_authenticate(user=self.admin)
-        
+
         # Update role to editor and bio
         data = {
             'role': 'editor',
@@ -127,7 +129,7 @@ class UserManagementTests(APITestCase):
         }
         response = self.client.put(self.detail_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         self.target_user.refresh_from_db()
         self.assertEqual(self.target_user.role, 'editor')
         self.assertTrue(self.target_user.is_staff)
@@ -141,11 +143,11 @@ class UserManagementTests(APITestCase):
 
     def test_admin_deactivate_user(self):
         self.client.force_authenticate(user=self.admin)
-        
+
         data = {'is_active': False}
         response = self.client.patch(self.detail_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         self.target_user.refresh_from_db()
         self.assertFalse(self.target_user.is_active)
 
@@ -156,11 +158,11 @@ class UserManagementTests(APITestCase):
 
     def test_admin_reset_password(self):
         self.client.force_authenticate(user=self.admin)
-        
+
         data = {'password': 'brandnewpassword123'}
         response = self.client.post(self.reset_password_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         self.target_user.refresh_from_db()
         self.assertTrue(self.target_user.check_password('brandnewpassword123'))
 
