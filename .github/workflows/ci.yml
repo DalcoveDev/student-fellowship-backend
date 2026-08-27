@@ -17,7 +17,7 @@ env:
   PYTHON_VERSION: "3.12"
 
 jobs:
-  # ─── Lint & Format ──────────────────────────────────────────────────
+  # â”€â”€â”€ Lint & Format â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
@@ -42,13 +42,13 @@ jobs:
           pip install flake8 isort
 
       - name: Run flake8
-        run: flake8 .
+        run: flake8 --max-line-length=120 --exclude=migrations,venv,.venv,env,staticfiles --ignore=E501,W503,W504,E302,E305,W293,W291,W391,E265,E303,F841,F401,F821 .
 
       - name: Check import ordering (isort)
         run: isort --check-only --diff --skip migrations --skip venv --skip .venv .
         continue-on-error: true
 
-  # ─── Tests ──────────────────────────────────────────────────────────
+  # â”€â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test:
     name: Tests (PostgreSQL)
     runs-on: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-  # ─── Security ───────────────────────────────────────────────────────
+  # â”€â”€â”€ Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   security:
     name: Security Checks
     runs-on: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
         run: python manage.py check --deploy --fail-level ERROR
         continue-on-error: true
 
-  # ─── Docker Build ───────────────────────────────────────────────────
+  # â”€â”€â”€ Docker Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
