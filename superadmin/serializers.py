@@ -102,6 +102,8 @@ class SuperAdminUserSerializer(serializers.ModelSerializer):
 
 class SuperAdminUserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, min_length=6)
+    is_staff = serializers.BooleanField(required=False)
+    is_superuser = serializers.BooleanField(required=False)
     group_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Group.objects.all(),
@@ -134,12 +136,16 @@ class SuperAdminUserCreateSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         role = validated_data.get('role', 'reader')
 
-        if 'is_staff' not in validated_data:
-            validated_data['is_staff'] = role in ('admin', 'editor', 'journalist')
-        if 'is_superuser' not in validated_data:
-            validated_data['is_superuser'] = role == 'admin'
+        is_staff = self.initial_data.get('is_staff', role in ('admin', 'editor', 'journalist'))
+        is_superuser = self.initial_data.get('is_superuser', role == 'admin')
+
+        validated_data.pop('is_staff', None)
+        validated_data.pop('is_superuser', None)
 
         user = User.objects.create_user(password=password, **validated_data)
+        user.is_staff = bool(is_staff)
+        user.is_superuser = bool(is_superuser)
+        user.save(update_fields=['is_staff', 'is_superuser'])
         if groups:
             user.groups.set(groups)
         return user
@@ -149,4 +155,3 @@ class SuperAdminSiteSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteSetting
         fields = '__all__'
-

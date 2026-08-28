@@ -42,4 +42,3 @@ class SystemAuditLog(models.Model):
     def __str__(self):
         actor_name = self.actor.username if self.actor else "System"
         return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] {actor_name} - {self.action}: {self.details[:60]}"
-

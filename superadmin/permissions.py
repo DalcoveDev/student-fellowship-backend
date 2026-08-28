@@ -16,4 +16,3 @@ class IsSuperAdmin(permissions.BasePermission):
                 or request.user.is_superuser
             )
         )
-

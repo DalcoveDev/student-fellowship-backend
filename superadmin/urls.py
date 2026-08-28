@@ -19,8 +19,11 @@ router.register(r'logs', SystemAuditLogViewSet, basename='superadmin-logs')
 urlpatterns = [
     path('stats/', SuperAdminDashboardStatsView.as_view(), name='superadmin-stats'),
     path('settings/', SuperAdminSettingsView.as_view(), name='superadmin-settings'),
-    path('settings/toggle-maintenance/', SuperAdminToggleMaintenanceView.as_view(), name='superadmin-toggle-maintenance'),
+    path(
+        'settings/toggle-maintenance/',
+        SuperAdminToggleMaintenanceView.as_view(),
+        name='superadmin-toggle-maintenance',
+    ),
     path('permissions/', PermissionListView.as_view(), name='superadmin-permissions'),
     path('', include(router.urls)),
 ]
-

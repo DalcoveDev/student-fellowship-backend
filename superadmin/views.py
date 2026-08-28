@@ -193,7 +193,12 @@ class SuperAdminUserViewSet(viewsets.ModelViewSet):
                 changes.append(f"Field '{field}' changed")
 
         details_str = "; ".join(changes) if changes else "Profile details updated"
-        action_type = 'ROLE_CHANGE' if old_role != user.role else ('STATUS_CHANGE' if old_active != user.is_active else 'USER_UPDATE')
+        if old_role != user.role:
+            action_type = 'ROLE_CHANGE'
+        elif old_active != user.is_active:
+            action_type = 'STATUS_CHANGE'
+        else:
+            action_type = 'USER_UPDATE'
 
         ip = get_client_ip(self.request)
         SystemAuditLog.objects.create(
@@ -249,7 +254,10 @@ class SuperAdminUserViewSet(viewsets.ModelViewSet):
             details=f"Reset password for user '{user.username}'",
             ip_address=ip,
         )
-        return Response({'status': f"Password for {user.username} has been reset successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {'status': f"Password for {user.username} has been reset successfully."},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=['post'], url_path='toggle-active')
     def toggle_active(self, request, pk=None):
@@ -401,4 +409,3 @@ class SuperAdminToggleMaintenanceView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-
