@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'layout',
     'media_library',
     'announcements',
+    'superadmin',
 ]
 
 MIDDLEWARE = [

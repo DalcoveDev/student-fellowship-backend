@@ -108,6 +108,9 @@ urlpatterns = [
 
     # CMS Protected endpoints
     path('api/v1/cms/', include(cms_router.urls)),
+
+    # Super Admin / Platform Administration endpoints
+    path('api/v1/superadmin/', include('superadmin.urls')),
 ]
 
 # ---------------------------------------------------------------------------
