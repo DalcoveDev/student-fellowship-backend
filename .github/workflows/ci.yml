@@ -194,8 +194,6 @@ jobs:
 
             echo "📦 Building and updating Docker containers..."
             cd deploy || exit 1
-            docker compose -f docker-compose.prod.yml build backend celery celery-beat
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat
             docker compose -f docker-compose.prod.yml build backend celery
             docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery
 
