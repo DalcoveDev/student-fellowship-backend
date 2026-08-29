@@ -1,4 +1,4 @@
-name: Backend CI
+name: Backend CI/CD
 
 on:
   push:
@@ -17,7 +17,7 @@ env:
   PYTHON_VERSION: "3.12"
 
 jobs:
-  # â”€â”€â”€ Lint & Format â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # ─── Lint & Format ──────────────────────────────────────────────────
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
         run: isort --check-only --diff --skip migrations --skip venv --skip .venv .
         continue-on-error: true
 
-  # â”€â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # ─── Tests ──────────────────────────────────────────────────────────
   test:
     name: Tests (PostgreSQL)
     runs-on: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-  # â”€â”€â”€ Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # ─── Security ───────────────────────────────────────────────────────
   security:
     name: Security Checks
     runs-on: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
         run: python manage.py check --deploy --fail-level ERROR
         continue-on-error: true
 
-  # â”€â”€â”€ Docker Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # ─── Docker Build ───────────────────────────────────────────────────
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
@@ -171,3 +171,39 @@ jobs:
           tags: isezerano-backend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ─── Continuous Deployment (CD) ─────────────────────────────────────
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    needs: [lint, test, security, docker]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name != 'pull_request'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script_stop: true
+          script: |
+            echo "🚀 Starting Automated Deployment for Isezerano Backend..."
+            cd /opt/isezerano/isezerano-website-backend || cd /opt/isezerano/backend || exit 1
+            git pull origin main || git pull origin master
+
+            echo "📦 Building and updating Docker containers..."
+            cd deploy || exit 1
+            docker compose -f docker-compose.prod.yml build backend celery celery-beat
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat
+
+            echo "🔄 Running database migrations..."
+            docker compose -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
+
+            echo "🎨 Collecting static files..."
+            docker compose -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput
+
+            echo "🧹 Pruning old unused Docker images..."
+            docker image prune -f
+
+            echo "✅ Backend Deployment Completed Successfully!"
