@@ -127,3 +127,4 @@ class DailyVerseAdmin(admin.ModelAdmin):
         text = obj.verse_text_english
         return (text[:50] + '...') if len(text) > 50 else text
     english_preview.short_description = "English"
+
