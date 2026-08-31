@@ -31,4 +31,3 @@ class NewsletterCampaignAdmin(admin.ModelAdmin):
     search_fields = ('subject', 'body')
     ordering = ('-created_at',)
     list_per_page = 25
-

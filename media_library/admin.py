@@ -20,4 +20,3 @@ class MediaAssetAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="max-height: 40px; border-radius: 4px;" />', obj.file.url)
         return "📄 File"
     preview.short_description = "Preview"
-

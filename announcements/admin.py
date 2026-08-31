@@ -39,4 +39,3 @@ class AnnouncementAdmin(admin.ModelAdmin):
     def deactivate_announcements(self, request, queryset):
         count = queryset.update(is_active=False)
         self.message_user(request, f"{count} announcement(s) deactivated.")
-
