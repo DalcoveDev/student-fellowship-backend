@@ -1,34 +1,57 @@
 """
 URL configuration for Isezerano project.
 """
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.http import JsonResponse
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-# Import views from our custom apps
-from users.views import RegisterView, UserMeView, CMSUserViewSet, UserAuditLogViewSet
-from articles.views import (
-    CategoryListView, TagListView, ArticleListView, ArticleDetailView,
-    CommentCreateView, ArticleCommentListView,
-    CMSArticleViewSet, CMSCategoryViewSet, CMSTagViewSet, CMSCommentViewSet,
+from ads.views import ActiveAdView, CMSAdSlotViewSet, RequestAdKitView, TrackAnalyticsView
+from announcements.views import (
+    CMSAnnouncementViewSet,
+    PublicAnnouncementDetailView,
+    PublicAnnouncementListView,
 )
-from ads.views import ActiveAdView, TrackAnalyticsView, CMSAdSlotViewSet, RequestAdKitView
-from newsletter.views import SubscribeView, CMSSubscriberViewSet, CMSNewsletterCampaignViewSet
+from articles.views import (
+    ArticleCommentListView,
+    ArticleDetailView,
+    ArticleListView,
+    CategoryListView,
+    CMSArticleViewSet,
+    CMSCategoryViewSet,
+    CMSCommentViewSet,
+    CMSTagViewSet,
+    CommentCreateView,
+    TagListView,
+)
 from layout.views import (
-    PublicHomepageLayoutView, PublicSiteSettingView, CMSHomepageLayoutViewSet,
-    CMSSiteSettingViewSet, DailyVerseTodayView, CMSDailyVerseViewSet,
-    CMSSocialLinkViewSet, PublicSocialLinkListView,
-    ContactInquiryCreateView, CMSContactInquiryViewSet,
-    PublicMenuView, CMSMenuItemViewSet,
+    CMSContactInquiryViewSet,
+    CMSDailyVerseViewSet,
+    CMSHomepageLayoutViewSet,
+    CMSMenuItemViewSet,
+    CMSSiteSettingViewSet,
+    CMSSocialLinkViewSet,
+    ContactInquiryCreateView,
+    DailyVerseTodayView,
+    PublicHomepageLayoutView,
+    PublicMenuView,
+    PublicSiteSettingView,
+    PublicSocialLinkListView,
 )
 from media_library.views import CMSMediaAssetViewSet
-from announcements.views import (
-    PublicAnnouncementListView, PublicAnnouncementDetailView, CMSAnnouncementViewSet,
-)
+from newsletter.views import CMSNewsletterCampaignViewSet, CMSSubscriberViewSet, SubscribeView
+# Import views from our custom apps
+from users.views import CMSUserViewSet, RegisterView, UserAuditLogViewSet, UserMeView
+
+# ---------------------------------------------------------------------------
+# Django Admin Site Customization
+# ---------------------------------------------------------------------------
+admin.site.site_header = "Isezerano Administration"
+admin.site.site_title = "Isezerano Admin Portal"
+admin.site.index_title = "Welcome to Isezerano Platform Management"
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +91,7 @@ cms_router.register(r'user-audit-logs', UserAuditLogViewSet, basename='cms-user-
 # ---------------------------------------------------------------------------
 
 urlpatterns = [
+    # Built-in Django Admin Interface
     path('admin/', admin.site.urls),
 
     # Health check
@@ -106,11 +130,8 @@ urlpatterns = [
     path('api/v1/daily-verse/today/', DailyVerseTodayView.as_view(), name='daily-verse-today'),
     path('api/v1/social-links/', PublicSocialLinkListView.as_view(), name='public-social-links'),
 
-    # CMS Protected endpoints
+    # CMS Protected endpoints (Newsroom / Editorial Staff)
     path('api/v1/cms/', include(cms_router.urls)),
-
-    # Super Admin / Platform Administration endpoints
-    path('api/v1/superadmin/', include('superadmin.urls')),
 ]
 
 # ---------------------------------------------------------------------------
