@@ -144,7 +144,7 @@ class CMSArticleWriteSerializer(serializers.ModelSerializer):
         model = Article
         fields = (
             'title', 'subtitle', 'body', 'cover_image', 'category', 'tags',
-            'status', 'is_breaking', 'is_featured', 'is_premium',
+            'status', 'published_at', 'is_breaking', 'is_featured', 'is_premium',
             'seo_title', 'seo_description',
         )
 

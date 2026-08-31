@@ -7,6 +7,7 @@ Security-hardened for production deployment.
 from pathlib import Path
 from datetime import timedelta
 import os
+import sys
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -277,7 +278,9 @@ SIMPLE_JWT = {
 
 # --- Security Headers (production) -------------------------------------------
 
-if not DEBUG:
+TESTING = 'test' in sys.argv
+
+if not DEBUG and not TESTING:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
