@@ -9,7 +9,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from ads.views import ActiveAdView, CMSAdSlotViewSet, RequestAdKitView, TrackAnalyticsView
+from ads.views import ActiveAdView, CMSAdSlotViewSet, PublicAdSlotDetailView, RequestAdKitView, TrackAnalyticsView
 from announcements.views import (
     CMSAnnouncementViewSet,
     PublicAnnouncementDetailView,
@@ -116,6 +116,7 @@ urlpatterns = [
 
     # Ads & Analytics endpoints
     path('api/v1/ads/request-kit/', RequestAdKitView.as_view(), name='request-ad-kit'),
+    path('api/v1/ads/slot/<int:pk>/', PublicAdSlotDetailView.as_view(), name='public-ad-slot-detail'),
     path('api/v1/ads/<str:placement>/', ActiveAdView.as_view(), name='active-ad'),
     path('api/v1/analytics/track/', TrackAnalyticsView.as_view(), name='track-analytics'),
 

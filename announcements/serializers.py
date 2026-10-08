@@ -3,7 +3,7 @@ from .models import Announcement
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):
-    attachment = serializers.SerializerMethodField()
+    attachment = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Announcement
@@ -12,24 +12,26 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             'reference_number', 'published_date', 'deadline_date', 'attachment', 'is_active'
         )
 
-    def get_attachment(self, obj):
-        if not obj.attachment:
-            return None
-        name = obj.attachment.name
-        if name.startswith('http://') or name.startswith('https://'):
-            return name
-        request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(obj.attachment.url)
-        return obj.attachment.url
-
     def to_representation(self, instance):
-        if hasattr(
-                instance,
-                'published_date') and instance.published_date and hasattr(
-                instance.published_date,
-                'date'):
-            instance.published_date = instance.published_date.date()
-        if hasattr(instance, 'deadline_date') and instance.deadline_date and hasattr(instance.deadline_date, 'date'):
-            instance.deadline_date = instance.deadline_date.date()
-        return super().to_representation(instance)
+        ret = super().to_representation(instance)
+        if hasattr(instance, 'published_date') and instance.published_date:
+            if hasattr(instance.published_date, 'date'):
+                ret['published_date'] = instance.published_date.date()
+        if hasattr(instance, 'deadline_date') and instance.deadline_date:
+            if hasattr(instance.deadline_date, 'date'):
+                ret['deadline_date'] = instance.deadline_date.date()
+        if instance.attachment:
+            name = instance.attachment.name
+            if name.startswith('http://') or name.startswith('https://'):
+                ret['attachment'] = name
+            else:
+                request = self.context.get('request')
+                if request:
+                    ret['attachment'] = request.build_absolute_uri(
+                        instance.attachment.url
+                    )
+                else:
+                    ret['attachment'] = instance.attachment.url
+        else:
+            ret['attachment'] = None
+        return ret

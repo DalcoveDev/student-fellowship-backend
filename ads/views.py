@@ -26,12 +26,20 @@ class ActiveAdView(APIView):
         if '_' in placement:
             candidates.add(placement.replace('_', '-'))
 
+        # Primary: active ads whose schedule window is open
         ads = AdSlot.objects.filter(
             placement__in=candidates,
             is_active=True,
             start_date__lte=now,
             end_date__gte=now,
-        ).order_by('-priority')
+        ).order_by('-priority', '-id')
+
+        # Fallback: if no scheduled ad is currently in window, serve the latest active ad
+        if not ads.exists():
+            ads = AdSlot.objects.filter(
+                placement__in=candidates,
+                is_active=True,
+            ).order_by('-priority', '-id')
 
         if not ads.exists():
             return Response({'detail': 'No active ads found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -39,6 +47,19 @@ class ActiveAdView(APIView):
         ad = ads.first()
         serializer = AdSlotSerializer(ad, context={'request': request})
         return Response(serializer.data)
+
+
+class PublicAdSlotDetailView(APIView):
+    """Public read endpoint to fetch a specific AdSlot by ID."""
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, pk):
+        try:
+            ad = AdSlot.objects.get(pk=pk, is_active=True)
+            serializer = AdSlotSerializer(ad, context={'request': request})
+            return Response(serializer.data)
+        except AdSlot.DoesNotExist:
+            return Response({'detail': 'Ad slot not found or inactive.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class RequestAdKitView(APIView):
