@@ -190,7 +190,8 @@ jobs:
           script: |
             echo "🚀 Starting Automated Deployment for Isezerano Backend..."
             cd /opt/isezerano/isezerano-website-backend || cd /opt/isezerano/backend || exit 1
-            git pull origin main || git pull origin master
+            git fetch origin main || git fetch origin master
+            git reset --hard origin/main || git reset --hard origin/master
 
             echo "📦 Building and updating Docker containers..."
             cd deploy || exit 1
