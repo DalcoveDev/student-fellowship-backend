@@ -139,11 +139,16 @@ class CMSArticleWriteSerializer(serializers.ModelSerializer):
         many=True,
         required=False,
     )
+    author = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Article
         fields = (
-            'title', 'subtitle', 'body', 'cover_image', 'category', 'tags',
+            'title', 'subtitle', 'body', 'cover_image', 'category', 'tags', 'author',
             'status', 'published_at', 'is_breaking', 'is_featured', 'is_premium',
             'seo_title', 'seo_description',
         )
@@ -158,6 +163,9 @@ class CMSArticleWriteSerializer(serializers.ModelSerializer):
         # Handle empty category string -> None
         if mutable.get('category') in ('', 'null'):
             mutable['category'] = None
+        # Handle empty author string -> omit
+        if mutable.get('author') in ('', 'null', None):
+            mutable.pop('author', None)
         return super().to_internal_value(mutable)
 
     def create(self, validated_data):

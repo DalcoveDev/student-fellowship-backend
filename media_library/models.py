@@ -20,11 +20,11 @@ def validate_file_extension(value):
 
 
 def validate_file_size(value):
-    """Reject files larger than 10 MB."""
-    max_size = 10 * 1024 * 1024  # 10 MB
+    """Reject files larger than 100 MB."""
+    max_size = 100 * 1024 * 1024  # 100 MB
     if value.size > max_size:
         raise ValidationError(
-            f'File size ({value.size / (1024 * 1024):.1f} MB) exceeds the 10 MB limit.'
+            f'File size ({value.size / (1024 * 1024):.1f} MB) exceeds the 100 MB limit.'
         )
 
 

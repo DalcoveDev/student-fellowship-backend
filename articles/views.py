@@ -152,13 +152,22 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
         return qs.filter(Q(author=user) | Q(co_authors=user)).distinct()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        user = self.request.user
+        if (user.role == 'admin' or user.is_superuser) and serializer.validated_data.get('author'):
+            serializer.save()
+        else:
+            serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
         instance = serializer.instance
         old_title = instance.title
         old_subtitle = instance.subtitle
         old_body = instance.body
+        user = self.request.user
+
+        # Only admin accounts can change the author of an article
+        if not (user.role == 'admin' or user.is_superuser) and 'author' in serializer.validated_data:
+            serializer.validated_data.pop('author')
 
         article = serializer.save()
 
@@ -170,6 +179,28 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
                 subtitle=old_subtitle,
                 body=old_body,
             )
+
+    @action(detail=False, methods=['get'])
+    def authors(self, request):
+        user = request.user
+        if not (user.role in ('admin', 'editor') or user.is_superuser):
+            return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        users_qs = UserModel.objects.filter(is_active=True).order_by('first_name', 'username')
+        authors_data = [
+            {
+                'id': u.id,
+                'username': u.username,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'email': u.email,
+                'role': u.role,
+                'avatar': u.avatar.url if u.avatar else None,
+            }
+            for u in users_qs
+        ]
+        return Response(authors_data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], permission_classes=[IsEditor])
     def publish(self, request, pk=None):
