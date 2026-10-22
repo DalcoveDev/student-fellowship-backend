@@ -3,6 +3,7 @@ import logging
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -136,3 +137,14 @@ class CMSAdSlotViewSet(viewsets.ModelViewSet):
     serializer_class = AdSlotSerializer
     permission_classes = (IsEditor,)
     pagination_class = None
+
+    @action(detail=True, methods=['post', 'patch'], url_path='toggle-description')
+    def toggle_description(self, request, pk=None):
+        ad = self.get_object()
+        if 'show_description' in request.data:
+            val = request.data.get('show_description')
+            ad.show_description = str(val).lower() in ('true', '1') if isinstance(val, str) else bool(val)
+        else:
+            ad.show_description = not ad.show_description
+        ad.save(update_fields=['show_description'])
+        return Response(self.get_serializer(ad).data)

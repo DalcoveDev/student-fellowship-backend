@@ -49,6 +49,11 @@ class AdSlot(models.Model):
     impressions = models.PositiveIntegerField(default=0)
     clicks = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    show_description = models.BooleanField(
+        default=False,
+        help_text="Show wording overlay / description deck (title, Learn More CTA, Sponsored label). "
+                  "When False, displays the banner image in its full designated size."
+    )
 
     def __str__(self):
         return f"{self.name} - {self.get_placement_display()}"
