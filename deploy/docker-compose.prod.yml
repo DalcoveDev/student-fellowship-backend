@@ -52,6 +52,8 @@ services:
     restart: unless-stopped
     env_file: ${ENV_FILE:-.env}
     environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_ENV: production
       DB_HOST: db
       DB_PORT: "5432"
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -83,12 +85,37 @@ services:
     restart: unless-stopped
     env_file: ${ENV_FILE:-.env}
     environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_ENV: production
       DB_HOST: db
       DB_PORT: "5432"
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
     command: celery -A config.celery worker --loglevel=info --concurrency=2
     volumes:
       - media_data:/app/media
+    networks:
+      - app
+      - data
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-beat:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_ENV: production
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+    command: celery -A config.celery beat --loglevel=info
     networks:
       - app
       - data

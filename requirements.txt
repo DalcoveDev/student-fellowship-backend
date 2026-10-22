@@ -8,13 +8,15 @@ Django==6.0.7
 djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
 
-# Database
+# Database & Cache
 psycopg2-binary==2.9.10
 dj-database-url==3.1.2
+redis==8.0.1
 
-# API Utilities
+# API Utilities & Networking
 django-cors-headers==4.9.0
 django-filter==26.1
+requests>=2.32.0
 
 # Media & Storage
 Pillow==11.2.1
@@ -27,11 +29,13 @@ django-simple-history==3.12.0
 
 # Background Tasks
 celery==5.6.3
-redis==8.0.1
 
 # Production Server
-gunicorn
-whitenoise
+gunicorn>=23.0.0
+whitenoise>=6.8.0
+
+# Monitoring & Error Reporting
+sentry-sdk>=2.20.0
 
 # Testing & CI
 flake8

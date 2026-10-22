@@ -77,8 +77,9 @@ def send_newsletter_campaign_task(campaign_id):
     return f"Campaign '{campaign.subject}' successfully transmitted to {sent_count} subscribers."
 
 
+@shared_task
 def send_subscription_confirmation(email):
-    """Welcome email after newsletter subscribe."""
+    """Welcome email after newsletter subscribe (queued via Celery)."""
     subject = 'Welcome to Isezerano Newsletter'
     text_body = (
         'Hello,\n\n'
@@ -108,8 +109,9 @@ def send_subscription_confirmation(email):
     )
 
 
-def send_ad_kit_request(*, name, email, company='', message='', phone=''):
-    """Notify the ads team and acknowledge the requester via SMTP."""
+@shared_task
+def send_ad_kit_request(name, email, company='', message='', phone=''):
+    """Notify the ads team and acknowledge the requester via SMTP (queued via Celery)."""
     ads_inbox = getattr(settings, 'ADS_INQUIRY_EMAIL', None) or settings.DEFAULT_FROM_EMAIL
 
     internal_subject = f'Ad Kit Request from {name}'

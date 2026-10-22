@@ -30,9 +30,12 @@ class SubscribeView(generics.CreateAPIView):
                 subscriber.is_active = True
                 subscriber.save()
             try:
-                send_subscription_confirmation(email)
-            except Exception as exc:
-                logger.exception("Newsletter confirmation email failed for %s: %s", email, exc)
+                send_subscription_confirmation.delay(email)
+            except Exception:
+                try:
+                    send_subscription_confirmation(email)
+                except Exception as exc:
+                    logger.exception("Newsletter confirmation email failed for %s: %s", email, exc)
             serializer = self.get_serializer(subscriber)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'email': 'This field is required.'}, status=status.HTTP_400_BAD_REQUEST)

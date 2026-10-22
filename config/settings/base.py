@@ -1,7 +1,8 @@
 """
-Django settings for Isezerano project.
+Isezerano — shared settings (base).
 
-Security-hardened for production deployment.
+Everything that is the same across dev and production lives here.
+Environment-specific overrides go in dev.py / prod.py.
 """
 
 from pathlib import Path
@@ -13,7 +14,7 @@ import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Read .env file manually if it exists to populate os.environ
 env_path = BASE_DIR / '.env'
@@ -25,7 +26,7 @@ if env_path.exists():
                 os.environ.setdefault(key.strip(), val.strip())
 
 
-def _env(name, default=None, required=False):
+def env_var(name, default=None, required=False):
     """Read an environment variable, optionally enforcing its presence."""
     value = os.environ.get(name, default)
     if required and not value:
@@ -33,6 +34,9 @@ def _env(name, default=None, required=False):
             f"Environment variable '{name}' is required but not set."
         )
     return value
+
+
+_env = env_var
 
 
 # --- Core Security -----------------------------------------------------------
@@ -53,6 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',         # SEO: sitemap framework
 
     # Third-party packages
     'rest_framework',
@@ -160,17 +165,11 @@ CLOUDINARY_API_SECRET = _env('CLOUDINARY_API_SECRET', '').strip()
 USE_CLOUDINARY = bool(CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET)
 
 if USE_CLOUDINARY:
-    import cloudinary
-    cloudinary.config(
-        cloud_name=CLOUDINARY_CLOUD_NAME,
-        api_key=CLOUDINARY_API_KEY,
-        api_secret=CLOUDINARY_API_SECRET,
-        secure=True,
-    )
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
         'API_KEY': CLOUDINARY_API_KEY,
         'API_SECRET': CLOUDINARY_API_SECRET,
+        'SECURE': True,
     }
 
 STORAGES = {
@@ -228,9 +227,14 @@ CORS_ALLOWED_ORIGINS = [
     if o.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF trusted origins — critical for production POST requests from the frontend
 CSRF_TRUSTED_ORIGINS = [
     o.strip()
-    for o in _env('CSRF_TRUSTED_ORIGINS', '').split(',')
+    for o in _env(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://isezerano.com,https://www.isezerano.com,https://prod.isezerano.com'
+    ).split(',')
     if o.strip()
 ]
 
@@ -244,7 +248,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50,
+    'PAGE_SIZE': 20,
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
@@ -253,6 +257,7 @@ REST_FRAMEWORK = {
         'anon': '60/minute',
         'user': '120/minute',
         'login': '5/minute',
+        'contact': '3/minute',
     },
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
@@ -280,20 +285,7 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# --- Security Headers (production) -------------------------------------------
-
-TESTING = 'test' in sys.argv
-
-if not DEBUG and not TESTING:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = _env('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# --- Security Headers (always set, overridden in dev) -------------------------
 
 X_FRAME_OPTIONS = 'DENY'
 
@@ -306,6 +298,19 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# --- Sentry (error tracking) -------------------------------------------------
+
+SENTRY_DSN = _env('SENTRY_DSN', '')
+if SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=float(_env('SENTRY_TRACES_RATE', '0.1')),
+        profiles_sample_rate=float(_env('SENTRY_PROFILES_RATE', '0.1')),
+        send_default_pii=False,
+        environment=_env('SENTRY_ENVIRONMENT', 'production'),
+    )
 
 # --- Logging ------------------------------------------------------------------
 
@@ -341,3 +346,11 @@ LOGGING = {
         },
     },
 }
+
+# --- Admin URL (obfuscated to prevent brute-force scanning) -------------------
+
+ADMIN_URL = _env('ADMIN_URL', 'isezerano-mgmt-portal/')
+
+# --- Testing flag (set by manage.py test) -------------------------------------
+
+TESTING = 'test' in sys.argv

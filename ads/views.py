@@ -81,13 +81,22 @@ class RequestAdKitView(APIView):
             )
 
         try:
-            send_ad_kit_request(
-                name=name,
-                email=email,
-                company=company,
-                phone=phone,
-                message=message,
-            )
+            try:
+                send_ad_kit_request.delay(
+                    name=name,
+                    email=email,
+                    company=company,
+                    phone=phone,
+                    message=message,
+                )
+            except Exception:
+                send_ad_kit_request(
+                    name=name,
+                    email=email,
+                    company=company,
+                    phone=phone,
+                    message=message,
+                )
         except Exception:
             logger.exception("Ad kit email failed for %s <%s>", name, email)
             return Response(
