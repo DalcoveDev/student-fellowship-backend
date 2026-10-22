@@ -197,17 +197,21 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024   # 100 MB
 
-# --- Email (SMTP) -------------------------------------------------------------
+# --- Email (SMTP & Mailjet) ---------------------------------------------------
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = _env('MAIL_HOST', 'smtp.gmail.com')
+MAILJET_API_KEY = _env('MAILJET_API_KEY', '')
+MAILJET_SECRET_KEY = _env('MAILJET_SECRET_KEY', '')
+
+EMAIL_BACKEND = _env('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = _env('MAIL_HOST', 'in-v3.mailjet.com' if MAILJET_API_KEY else 'smtp.gmail.com')
 EMAIL_PORT = int(_env('MAIL_PORT', '587'))
-EMAIL_HOST_USER = _env('SMTP_USERNAME', '')
-EMAIL_HOST_PASSWORD = _env('SMTP_PASSWORD', '')
+EMAIL_HOST_USER = _env('SMTP_USERNAME', MAILJET_API_KEY or '')
+EMAIL_HOST_PASSWORD = _env('SMTP_PASSWORD', MAILJET_SECRET_KEY or '')
 EMAIL_USE_TLS = _env('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = _env('EMAIL_USE_SSL', 'False').lower() == 'true'
 EMAIL_TIMEOUT = int(_env('EMAIL_TIMEOUT', '20'))
-DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@isezerano.com')
+DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', 'notification@isezerano.com')
+SERVER_EMAIL = _env('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 ADS_INQUIRY_EMAIL = _env('ADS_INQUIRY_EMAIL', DEFAULT_FROM_EMAIL)
 
 # --- Auth ---------------------------------------------------------------------
