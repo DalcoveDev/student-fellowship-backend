@@ -10,6 +10,10 @@ DEBUG = False
 
 # Enforce secure HTTPS redirection & cookies
 SECURE_SSL_REDIRECT = env_var('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
+# Allow internal Docker health check probes over HTTP without 301 redirects
+SECURE_REDIRECT_EXEMPT = [
+    r'^api/v1/health/?$',
+]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
