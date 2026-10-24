@@ -203,7 +203,8 @@ jobs:
             docker compose -f docker-compose.prod.yml build backend celery celery-beat
             docker ps -a --format '{{.Names}}' | grep -E '_isezerano-production-' | xargs -r docker rm -f || true
             docker compose -f docker-compose.prod.yml rm -sf backend celery celery-beat || true
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat nginx
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat
+            docker compose -f docker-compose.prod.yml up -d --no-deps nginx
             docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload || true
 
             echo "🔄 Running database migrations..."
