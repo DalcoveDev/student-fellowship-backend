@@ -101,6 +101,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      disable: true
     logging: *default-logging
 
   celery-beat:
@@ -124,6 +126,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      disable: true
     logging: *default-logging
 
   frontend:
