@@ -1,5 +1,7 @@
 import logging
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -21,24 +23,48 @@ class SubscribeView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        # Allow activating an existing inactive subscriber
-        email = request.data.get('email')
-        if email:
-            email = email.strip().lower()
-            subscriber, created = Subscriber.objects.get_or_create(email=email)
-            if not created and not subscriber.is_active:
-                subscriber.is_active = True
-                subscriber.save()
-            try:
-                send_subscription_confirmation.delay(email)
-            except Exception:
-                try:
-                    send_subscription_confirmation(email)
-                except Exception as exc:
-                    logger.exception("Newsletter confirmation email failed for %s: %s", email, exc)
-            serializer = self.get_serializer(subscriber)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'email': 'This field is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        raw_email = request.data.get('email')
+        if not raw_email or not str(raw_email).strip():
+            return Response(
+                {'email': 'This field is required.', 'email_sent': False},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        email = str(raw_email).strip().lower()
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response(
+                {'email': 'Enter a valid email address.', 'email_sent': False},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        subscriber, created = Subscriber.objects.get_or_create(email=email)
+        if not created and not subscriber.is_active:
+            subscriber.is_active = True
+            subscriber.save()
+
+        email_sent = False
+        email_error = None
+        try:
+            send_subscription_confirmation(email)
+            email_sent = True
+        except Exception as exc:
+            email_error = str(exc)
+            logger.exception("Newsletter confirmation email failed for %s: %s", email, exc)
+
+        serializer = self.get_serializer(subscriber)
+        data = dict(serializer.data)
+        data['email_sent'] = email_sent
+        data['already_subscribed'] = not created
+        data['detail'] = (
+            'Subscription confirmed and confirmation email sent.'
+            if email_sent
+            else 'Subscribed, but confirmation email could not be sent.'
+        )
+        if email_error:
+            data['email_error'] = email_error
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 # ================= CMS API VIEWS =================

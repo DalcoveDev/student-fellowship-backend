@@ -1,3 +1,5 @@
+from unittest.mock import patch
+from django.core import mail
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
@@ -50,6 +52,25 @@ class NewsletterTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Subscriber.objects.filter(email='api@example.com').exists())
+        self.assertTrue(response.data.get('email_sent'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('api@example.com', mail.outbox[0].to)
+
+    @patch('newsletter.views.send_subscription_confirmation', side_effect=RuntimeError('SMTP error'))
+    def test_subscribe_endpoint_when_email_not_sent(self, _mock_send):
+        url = reverse('newsletter-subscribe')
+        data = {'email': 'noemail@example.com'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Subscriber.objects.filter(email='noemail@example.com').exists())
+        self.assertFalse(response.data.get('email_sent'))
+        self.assertIn('email_error', response.data)
+
+    def test_subscribe_endpoint_invalid_email(self):
+        url = reverse('newsletter-subscribe')
+        response = self.client.post(url, {'email': 'not-an-email'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data.get('email_sent'))
 
     def test_cms_subscriber_list_permissions(self):
         url = reverse('cms-subscribers-list')
