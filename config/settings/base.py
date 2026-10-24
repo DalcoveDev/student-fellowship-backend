@@ -132,7 +132,7 @@ if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=not DEBUG,
+        ssl_require=not DEBUG and not os.environ.get('DATABASE_URL', '').startswith('sqlite'),
     )
 
 # --- Password validation ------------------------------------------------------
