@@ -125,7 +125,7 @@ jobs:
       DJANGO_SETTINGS_MODULE: "config.settings.prod"
       SECRET_KEY: "ci-secret-key-that-is-very-long-and-cryptographically-random-64-characters-long"
       DEBUG: "False"
-      ALLOWED_HOSTS: "localhost,127.0.0.1,prod.isezerano.com"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,isezerano.com,www.isezerano.com,prod.isezerano.com"
 
     steps:
       - uses: actions/checkout@v4
@@ -198,7 +198,8 @@ jobs:
             echo "📦 Building and updating Docker containers..."
             cd deploy || exit 1
             docker compose -f docker-compose.prod.yml build backend celery celery-beat
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans backend celery celery-beat nginx
+            docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload || true
 
             echo "🔄 Running database migrations..."
             docker compose -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
