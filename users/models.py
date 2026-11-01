@@ -12,10 +12,27 @@ class User(AbstractUser):
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='reader')
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    bio = models.TextField(blank=True, max_length=500)
+    bio = models.TextField(blank=True)
     twitter = models.URLField(blank=True)
     github = models.URLField(blank=True)
     website = models.URLField(blank=True)
+
+    def save(self, *args, **kwargs):
+        # A Django superuser is always a full CMS administrator. Keep the role
+        # in sync so the frontend (which checks `role`) grants the same access
+        # as the backend permission classes.
+        if self.is_superuser:
+            update_fields = kwargs.get('update_fields')
+            changed_fields = set()
+            if self.role != 'admin':
+                self.role = 'admin'
+                changed_fields.add('role')
+            if not self.is_staff:
+                self.is_staff = True
+                changed_fields.add('is_staff')
+            if update_fields is not None and changed_fields:
+                kwargs['update_fields'] = set(update_fields) | changed_fields
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

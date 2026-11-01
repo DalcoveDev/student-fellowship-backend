@@ -29,6 +29,14 @@ class AdsModelTests(TestCase):
         )
         self.assertEqual(ad.ctr, 2.5)
 
+    def test_display_count_defaults_to_auto(self):
+        now = timezone.now()
+        ad = AdSlot.objects.create(
+            name='Test', placement='header_banner',
+            start_date=now, end_date=now + timedelta(days=1),
+        )
+        self.assertEqual(ad.display_count, 0)
+
 
 class AdsAPITests(APITestCase):
     def setUp(self):
@@ -58,6 +66,7 @@ class AdsAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Banner 1')
+        self.assertEqual(response.data['display_count'], 0)
 
     def test_active_ad_public_normalise_placement(self):
         url = reverse('active-ad', kwargs={'placement': 'header-banner'})
@@ -86,6 +95,15 @@ class AdsAPITests(APITestCase):
         url = reverse('cms-ads-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cms_update_display_count(self):
+        self.client.force_authenticate(user=self.editor)
+        url = reverse('cms-ads-detail', kwargs={'pk': self.ad.pk})
+        response = self.client.patch(url, {'display_count': 3}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['display_count'], 3)
+        self.ad.refresh_from_db()
+        self.assertEqual(self.ad.display_count, 3)
 
     def test_cms_create_ad_editor(self):
         self.client.force_authenticate(user=self.editor)

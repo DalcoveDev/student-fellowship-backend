@@ -1,10 +1,17 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Category, Tag, Article, ArticleRevision, Comment
 from users.serializers import UserSerializer
 
 User = get_user_model()
+
+
+class CMSCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'slug', 'color_accent', 'parent', 'order')
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -152,6 +159,41 @@ class CMSArticleWriteSerializer(serializers.ModelSerializer):
             'status', 'published_at', 'is_breaking', 'is_featured', 'is_premium',
             'seo_title', 'seo_description',
         )
+
+    def validate(self, attrs):
+        """Enforce a sensible relationship between status and publication time."""
+        instance = self.instance
+        status_value = attrs.get('status', instance.status if instance else 'draft')
+
+        if 'published_at' in attrs:
+            published_at = attrs.get('published_at')
+        elif instance is not None:
+            published_at = instance.published_at
+        else:
+            published_at = None
+
+        now = timezone.now()
+
+        # Only reject an invalid schedule when the caller is actively setting
+        # the schedule. A stored schedule that just became due is auto-published
+        # by Article.save(); it should not block unrelated edits.
+        touched_schedule = 'status' in attrs or 'published_at' in attrs
+
+        if status_value == 'scheduled' and touched_schedule:
+            if not published_at:
+                raise serializers.ValidationError({
+                    'published_at': 'Choose the date and time when this article should be published.'
+                })
+            already_scheduled = instance is not None and instance.status == 'scheduled'
+            if published_at <= now and not already_scheduled:
+                raise serializers.ValidationError({
+                    'published_at': 'Scheduled publication time must be in the future.'
+                })
+        elif status_value == 'published' and not published_at:
+            # Publishing immediately without a date uses the current time.
+            attrs['published_at'] = now
+
+        return attrs
 
     def to_internal_value(self, data):
         # Coerce string booleans from multipart form-data to real booleans

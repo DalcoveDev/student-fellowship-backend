@@ -6,6 +6,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, filters, permissions, status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Category, Tag, Article, ArticleRevision, Comment
@@ -35,14 +36,32 @@ class TagListView(generics.ListAPIView):
     pagination_class = None  # Tags are small; return all
 
 
+class ArticlePagination(PageNumberPagination):
+    """Pagination that lets public pages request the number of articles they
+    actually display (frontend sections can show up to 50)."""
+
+    page_size = 50
+    page_size_query_param = 'limit'
+    max_page_size = 200
+
+
 class ArticleListView(generics.ListAPIView):
     serializer_class = ArticleListSerializer
     permission_classes = (permissions.AllowAny,)
+    pagination_class = ArticlePagination
 
     def get_queryset(self):
+        # Promote due scheduled articles before listing. This keeps the public
+        # site accurate without requiring Celery beat to be running.
+        Article.publish_due_scheduled()
+
         queryset = (
             Article.objects
-            .filter(status='published', published_at__lte=timezone.now())
+            .filter(status='published')
+            .filter(
+                Q(published_at__lte=timezone.now()) |
+                Q(published_at__isnull=True)
+            )
             .select_related('author', 'category')
             .prefetch_related('tags')
         )
@@ -85,15 +104,23 @@ class ArticleListView(generics.ListAPIView):
 
 
 class ArticleDetailView(generics.RetrieveAPIView):
-    queryset = (
-        Article.objects
-        .filter(status='published')
-        .select_related('author', 'category')
-        .prefetch_related('tags', 'co_authors', 'revisions__author')
-    )
     serializer_class = ArticleDetailSerializer
     lookup_field = 'slug'
     permission_classes = (permissions.AllowAny,)
+
+    def get_queryset(self):
+        # Make an article visible as soon as its scheduled time is reached.
+        Article.publish_due_scheduled()
+        return (
+            Article.objects
+            .filter(status='published')
+            .filter(
+                Q(published_at__lte=timezone.now()) |
+                Q(published_at__isnull=True)
+            )
+            .select_related('author', 'category')
+            .prefetch_related('tags', 'co_authors', 'revisions__author')
+        )
 
     def get_object(self):
         obj = super().get_object()
@@ -169,6 +196,9 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
         if not (user.role == 'admin' or user.is_superuser) and 'author' in serializer.validated_data:
             serializer.validated_data.pop('author')
 
+        # Publication date/status consistency is handled by
+        # CMSArticleWriteSerializer.validate() and Article.save().
+
         article = serializer.save()
 
         if old_title != article.title or old_subtitle != article.subtitle or old_body != article.body:
@@ -194,6 +224,7 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
                 'username': u.username,
                 'first_name': u.first_name,
                 'last_name': u.last_name,
+                'full_name': u.get_full_name() or u.username,
                 'email': u.email,
                 'role': u.role,
                 'avatar': u.avatar.url if u.avatar else None,
@@ -201,6 +232,35 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
             for u in users_qs
         ]
         return Response(authors_data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsEditor])
+    def change_author(self, request, pk=None):
+        """Reassign an article to another active author (used by the CMS list)."""
+        article = self.get_object()
+        author_id = request.data.get('author_id')
+
+        if not author_id:
+            return Response(
+                {'detail': 'author_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        try:
+            new_author = UserModel.objects.get(pk=author_id, is_active=True)
+        except (UserModel.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {'detail': 'Author not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        article.author = new_author
+        article.save(update_fields=['author'])
+        return Response(
+            self.get_serializer(article).data,
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=['post'], permission_classes=[IsEditor])
     def publish(self, request, pk=None):

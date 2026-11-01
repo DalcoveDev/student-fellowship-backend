@@ -80,6 +80,18 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
+    @classmethod
+    def publish_due_scheduled(cls):
+        """Promote scheduled articles whose release time has arrived.
+
+        Called by the public list/detail views so scheduling works even when a
+        Celery worker/beat process is not running.
+        """
+        return cls.objects.filter(
+            status='scheduled',
+            published_at__lte=timezone.now(),
+        ).update(status='published')
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
@@ -88,9 +100,25 @@ class Article(models.Model):
         word_count = len(self.body.split()) if self.body else 0
         self.reading_time = max(1, round(word_count / 200))
 
-        # Set published_at if status changes to published and not set yet
-        if self.status == 'published' and not self.published_at:
-            self.published_at = timezone.now()
+        now = timezone.now()
+        original_status = self.status
+
+        # Keep status and publication time consistent:
+        # - published without a date gets "now"
+        # - published with a future date is effectively scheduled
+        # - scheduled with a date that has passed is published immediately
+        if self.status == 'published':
+            if not self.published_at:
+                self.published_at = now
+            elif self.published_at > now:
+                self.status = 'scheduled'
+        elif self.status == 'scheduled' and self.published_at and self.published_at <= now:
+            self.status = 'published'
+
+        # Keep update_fields accurate when save() flips the status.
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and self.status != original_status:
+            kwargs['update_fields'] = set(update_fields) | {'status'}
 
         super().save(*args, **kwargs)
 

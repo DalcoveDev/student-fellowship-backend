@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from articles.models import Article
 
@@ -17,6 +18,9 @@ class AdSlot(models.Model):
         ('grid_sidebar_stack_2', 'Grid Sidebar Stack Ad 2 (300x250)'),
         ('grid_sidebar_stack_3', 'Grid Sidebar Stack Ad 3 (300x250)'),
         ('sports_sidebar', 'Sports Sidebar (300x600 Skyscraper)'),
+        ('category_bottom_banner', 'Category Page Bottom Banner (970x90)'),
+        ('category_sidebar_2', 'Category Page Sidebar Ad 2 (300x250)'),
+        ('category_sidebar_3', 'Category Page Sidebar Ad 3 (300x250)'),
         ('flyer_1', 'Flyer Ad 1 (Square/Portrait)'),
         ('flyer_2', 'Flyer Ad 2 (Square/Portrait)'),
         ('flyer_3', 'Flyer Ad 3 (Square/Portrait)'),
@@ -32,7 +36,21 @@ class AdSlot(models.Model):
 
     name = models.CharField(max_length=100)
     placement = models.CharField(max_length=30, choices=PLACEMENT_CHOICES)
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        help_text="Category/tag for ad grouping (e.g., 'sports', 'finance', 'local')"
+    )
     image = models.ImageField(upload_to='ads/', null=True, blank=True)
+    display_count = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(12)],
+        help_text=(
+            "How many copies of this creative to show across a horizontal "
+            "banner. Use 0 to auto-fill the available width."
+        ),
+    )
     html_content = models.TextField(blank=True, help_text="For custom HTML/JS ad codes like Google Adsense")
     target_url = models.URLField(blank=True)
     cta_text = models.CharField(max_length=50, default='Learn More')
@@ -49,6 +67,10 @@ class AdSlot(models.Model):
     impressions = models.PositiveIntegerField(default=0)
     clicks = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    show_description = models.BooleanField(
+        default=False,
+        help_text="Show the campaign title/description/CTA instead of only the banner image",
+    )
 
     def __str__(self):
         return f"{self.name} - {self.get_placement_display()}"

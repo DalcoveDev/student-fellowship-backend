@@ -246,8 +246,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '60/minute',
-        'user': '120/minute',
+        'anon': '1000/minute',  # Very lenient for local development
+        'user': '1000/minute',  # Very lenient for local development
         'login': '5/minute',
     },
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',

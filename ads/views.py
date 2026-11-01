@@ -1,8 +1,11 @@
 import logging
 
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
-from rest_framework import viewsets, permissions, status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,27 +29,45 @@ class ActiveAdView(APIView):
         if '_' in placement:
             candidates.add(placement.replace('_', '-'))
 
-        # Primary: active ads whose schedule window is open
-        ads = AdSlot.objects.filter(
-            placement__in=candidates,
-            is_active=True,
-            start_date__lte=now,
-            end_date__gte=now,
-        ).order_by('-priority', '-id')
+        category = (request.query_params.get('category') or '').strip()
+        include_all = (request.query_params.get('all') or '').lower() in (
+            '1', 'true', 'yes',
+        )
 
-        # Fallback: if no scheduled ad is currently in window, serve the latest active ad
-        if not ads.exists():
-            ads = AdSlot.objects.filter(
+        def queryset_for(category_filter):
+            qs = AdSlot.objects.filter(
                 placement__in=candidates,
                 is_active=True,
-            ).order_by('-priority', '-id')
+            )
+            if category_filter:
+                qs = qs.filter(Q(category__iexact=category_filter) | Q(category=''))
+            return qs.order_by('-priority', '-id')
 
-        if not ads.exists():
+        # Primary: active ads whose schedule window is open.
+        ads = list(queryset_for(category).filter(
+            start_date__lte=now,
+            end_date__gte=now,
+        ))
+        # Fallback: if no scheduled ad is currently in window, serve active
+        # ads anyway so a campaign is never silently hidden by bad dates.
+        if not ads:
+            ads = list(queryset_for(category))
+
+        # If this category has no specific ad, fall back to any ad in this
+        # placement so placements never go blank unnecessarily.
+        if not ads and category:
+            ads = list(AdSlot.objects.filter(
+                placement__in=candidates,
+                is_active=True,
+            ).order_by('-priority', '-id'))
+
+        if not ads:
             return Response({'detail': 'No active ads found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        ad = ads.first()
-        serializer = AdSlotSerializer(ad, context={'request': request})
-        return Response(serializer.data)
+        serializer = AdSlotSerializer(ads, many=True, context={'request': request})
+        if include_all:
+            return Response(serializer.data)
+        return Response(serializer.data[0])
 
 
 class PublicAdSlotDetailView(APIView):
@@ -132,7 +153,26 @@ class TrackAnalyticsView(APIView):
 # ================= CMS API VIEWS =================
 
 class CMSAdSlotViewSet(viewsets.ModelViewSet):
-    queryset = AdSlot.objects.all().order_by('-priority', 'id')
+    queryset = AdSlot.objects.all().order_by('category', '-priority', 'id')
     serializer_class = AdSlotSerializer
     permission_classes = (IsEditor,)
     pagination_class = None
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['placement', 'is_active', 'category']
+    search_fields = ['name', 'placement', 'category']
+    ordering_fields = ['priority', 'name', 'id', 'category']
+    ordering = ['category', '-priority', 'id']
+
+    @action(detail=True, methods=['post'], url_path='toggle-description')
+    def toggle_description(self, request, pk=None):
+        """Toggle (or explicitly set) whether an ad displays its description."""
+        ad = self.get_object()
+        value = request.data.get('show_description', None)
+        if value is None:
+            ad.show_description = not ad.show_description
+        else:
+            ad.show_description = str(value).strip().lower() in (
+                '1', 'true', 'yes', 'on',
+            )
+        ad.save(update_fields=['show_description'])
+        return Response(self.get_serializer(ad).data)

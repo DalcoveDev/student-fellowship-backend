@@ -7,6 +7,7 @@ from ads.models import AdSlot
 class HomepageLayout(models.Model):
     SECTION_CHOICES = (
         ('hero', 'Hero Lead Story Section'),
+        ('banner', 'Homepage Banner Section'),
         ('featured-grid', 'Secondary Featured Grid (3-4 stories)'),
         ('category-rail', 'Category Scroll Rail'),
         ('ad-slot', 'Advertisement Banner Block'),
@@ -44,6 +45,19 @@ class HomepageLayout(models.Model):
         blank=True,
         default='default',
         help_text="Visual variant / template")
+
+    # Banner-specific fields
+    banner_image = models.ImageField(
+        upload_to='banners/',
+        null=True,
+        blank=True,
+        help_text="Banner image for homepage banner section")
+    banner_text = models.TextField(
+        blank=True,
+        help_text="Description/text displayed over or alongside the banner image")
+    banner_show_description = models.BooleanField(
+        default=True,
+        help_text="Show the banner description by default on the public page")
 
     # Specific fields for conditional sections
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True,

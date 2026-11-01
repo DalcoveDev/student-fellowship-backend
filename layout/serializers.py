@@ -21,7 +21,8 @@ class HomepageLayoutSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'page', 'section_type', 'order', 'category', 'categories', 'ad_slot',
             'is_visible', 'article_limit', 'title', 'content', 'video_url', 'display_variant',
-            'category_details', 'categories_details', 'ad_slot_details'
+            'category_details', 'categories_details', 'ad_slot_details',
+            'banner_image', 'banner_text', 'banner_show_description'
         )
 
 

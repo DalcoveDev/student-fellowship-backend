@@ -9,9 +9,10 @@ class AdSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdSlot
         fields = (
-            'id', 'name', 'placement', 'image', 'html_content', 'target_url',
+            'id', 'name', 'placement', 'category', 'image', 'display_count', 'html_content', 'target_url',
             'cta_text', 'sponsored_logo', 'sponsored_headline', 'sponsored_video_url',
-            'start_date', 'end_date', 'priority', 'impressions', 'clicks', 'is_active', 'ctr'
+            'start_date', 'end_date', 'priority', 'impressions', 'clicks', 'is_active',
+            'show_description', 'ctr'
         )
         read_only_fields = ('id', 'impressions', 'clicks', 'ctr')
 

@@ -86,6 +86,19 @@ class CMSUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("A user with this email already exists.")
         return value
 
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request and self.instance and self.instance.pk == request.user.pk:
+            if 'role' in attrs and attrs['role'] != self.instance.role:
+                raise serializers.ValidationError({
+                    'role': 'You cannot change your own role.'
+                })
+            if attrs.get('is_active') is False:
+                raise serializers.ValidationError({
+                    'is_active': 'You cannot deactivate your own account.'
+                })
+        return attrs
+
 
 class CMSUserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
@@ -121,9 +134,26 @@ class CMSUserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = User.objects.create_user(**validated_data)
-        user.set_password(password)
+        avatar = validated_data.get('avatar')
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=password,
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            role=validated_data.get('role', 'reader'),
+            is_active=validated_data.get('is_active', True),
+        )
+        # Set avatar if provided
+        if avatar:
+            user.avatar = avatar
+        # Set staff status based on role
         user.is_staff = user.role in ('admin', 'editor', 'journalist')
+        # Set other profile fields
+        user.bio = validated_data.get('bio', '')
+        user.twitter = validated_data.get('twitter', '')
+        user.github = validated_data.get('github', '')
+        user.website = validated_data.get('website', '')
         user.save()
         return user
 

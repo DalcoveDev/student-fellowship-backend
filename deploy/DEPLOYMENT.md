@@ -15,7 +15,7 @@ Celery, and Next.js communicate on private Docker networks.
 ## 0. Before deployment
 
 1. Rotate the server password that was shared in chat and configure SSH keys.
-2. Confirm `prod.isezerano.com` resolves to `161.35.113.160`.
+2. Confirm `http://127.0.0.1:8000` resolves to `161.35.113.160`.
 3. Ensure `.env`, uploaded media, virtual environments, `node_modules`, and
    `.next` are not committed.
 4. Use a Cloudinary key with `create/upload` permission, or leave all three
@@ -151,11 +151,11 @@ Important values:
 
 ```env
 DEBUG=False
-ALLOWED_HOSTS=prod.isezerano.com,161.35.113.160,localhost
-CORS_ALLOWED_ORIGINS=https://prod.isezerano.com
-CSRF_TRUSTED_ORIGINS=https://prod.isezerano.com
+ALLOWED_HOSTS=http://127.0.0.1:8000,161.35.113.160,localhost
+CORS_ALLOWED_ORIGINS=https://http://127.0.0.1:8000
+CSRF_TRUSTED_ORIGINS=https://http://127.0.0.1:8000
 SECURE_SSL_REDIRECT=True
-NEXT_PUBLIC_API_URL=https://prod.isezerano.com
+NEXT_PUBLIC_API_URL=https://http://127.0.0.1:8000
 ```
 
 Do not append `/api` to `NEXT_PUBLIC_API_URL`; frontend code adds `/api/v1`.
@@ -192,14 +192,14 @@ docker compose --env-file .env -f docker-compose.prod.yml logs --tail=100 backen
 Confirm DNS before requesting a certificate:
 
 ```bash
-getent hosts prod.isezerano.com
+getent hosts http://127.0.0.1:8000
 ```
 
 The result must include `161.35.113.160`. Then:
 
 ```bash
 sudo certbot certonly --standalone \
-  --domain prod.isezerano.com \
+  --domain http://127.0.0.1:8000 \
   --email <OPERATIONS_EMAIL> \
   --agree-tos \
   --no-eff-email
@@ -214,8 +214,8 @@ docker compose --env-file .env -f docker-compose.prod.yml up -d nginx
 Test:
 
 ```bash
-curl -I https://prod.isezerano.com/
-curl -f https://prod.isezerano.com/api/v1/health/
+curl -I https://http://127.0.0.1:8000/
+curl -f https://http://127.0.0.1:8000/api/v1/health/
 ```
 
 ## 8. Initialize application data
@@ -240,9 +240,9 @@ docker compose --env-file .env -f docker-compose.prod.yml \
 
 Verify all of the following:
 
-- `https://prod.isezerano.com/`
-- `https://prod.isezerano.com/api/v1/health/`
-- `https://prod.isezerano.com/api/v1/articles/`
+- `https://http://127.0.0.1:8000/`
+- `https://http://127.0.0.1:8000/api/v1/health/`
+- `https://http://127.0.0.1:8000/api/v1/articles/`
 - login and `/newsroom`
 - create/edit an article and upload a cover
 - create/delete an ad
