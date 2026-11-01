@@ -4,7 +4,10 @@ URL configuration for Isezerano project.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import JsonResponse
+from django.contrib.sitemaps.views import sitemap
+from django.core.cache import cache
+from django.db import connection
+from django.http import HttpResponse, JsonResponse
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -27,6 +30,7 @@ from articles.views import (
     CommentCreateView,
     TagListView,
 )
+from config.sitemaps import sitemaps
 from layout.views import (
     CMSContactInquiryViewSet,
     CMSDailyVerseViewSet,
@@ -55,11 +59,60 @@ admin.site.index_title = "Welcome to Isezerano Platform Management"
 
 
 # ---------------------------------------------------------------------------
-# Health check (for Docker / load balancer readiness probes)
+# Deep Health check (Database + Cache readiness probe)
 # ---------------------------------------------------------------------------
 
 def health_check(request):
-    return JsonResponse({'status': 'ok'})
+    """
+    Verifies backend operational status including PostgreSQL and Cache.
+    Returns 200 OK if healthy, 503 Service Unavailable if dependencies fail.
+    """
+    status_report = {'status': 'ok'}
+    http_status = 200
+
+    # 1. Database check
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+            cursor.fetchone()
+        status_report['database'] = 'ok'
+    except Exception as exc:
+        status_report['database'] = f'unhealthy: {exc}'
+        status_report['status'] = 'error'
+        http_status = 503
+
+    # 2. Cache / Redis check
+    try:
+        cache.set('_probe', 1, timeout=5)
+        if cache.get('_probe') == 1:
+            status_report['cache'] = 'ok'
+        else:
+            status_report['cache'] = 'unresponsive'
+            status_report['status'] = 'degraded'
+    except Exception as exc:
+        status_report['cache'] = f'unhealthy: {exc}'
+        status_report['status'] = 'degraded'
+
+    return JsonResponse(status_report, status=http_status)
+
+
+# ---------------------------------------------------------------------------
+# SEO Robots.txt
+# ---------------------------------------------------------------------------
+
+def robots_txt(request):
+    admin_path = getattr(settings, 'ADMIN_URL', 'admin/').strip('/')
+    lines = [
+        "User-agent: *",
+        f"Disallow: /{admin_path}/",
+        "Disallow: /admin/",
+        "Disallow: /api/v1/cms/",
+        "Disallow: /api/v1/auth/",
+        "Allow: /",
+        "",
+        "Sitemap: https://isezerano.com/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
 # ---------------------------------------------------------------------------
@@ -90,9 +143,15 @@ cms_router.register(r'user-audit-logs', UserAuditLogViewSet, basename='cms-user-
 # URL patterns
 # ---------------------------------------------------------------------------
 
+admin_url_path = getattr(settings, 'ADMIN_URL', 'admin/').strip('/') + '/'
+
 urlpatterns = [
-    # Built-in Django Admin Interface
-    path('admin/', admin.site.urls),
+    # Obfuscated Admin Interface (configurable via ADMIN_URL env var)
+    path(admin_url_path, admin.site.urls),
+
+    # SEO Endpoints
+    path('robots.txt', robots_txt, name='robots-txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
     # Health check
     path('api/v1/health/', health_check, name='health-check'),

@@ -101,13 +101,22 @@ class RequestAdKitView(APIView):
             )
 
         try:
-            send_ad_kit_request(
-                name=name,
-                email=email,
-                company=company,
-                phone=phone,
-                message=message,
-            )
+            try:
+                send_ad_kit_request.delay(
+                    name=name,
+                    email=email,
+                    company=company,
+                    phone=phone,
+                    message=message,
+                )
+            except Exception:
+                send_ad_kit_request(
+                    name=name,
+                    email=email,
+                    company=company,
+                    phone=phone,
+                    message=message,
+                )
         except Exception:
             logger.exception("Ad kit email failed for %s <%s>", name, email)
             return Response(
@@ -163,16 +172,14 @@ class CMSAdSlotViewSet(viewsets.ModelViewSet):
     ordering_fields = ['priority', 'name', 'id', 'category']
     ordering = ['category', '-priority', 'id']
 
-    @action(detail=True, methods=['post'], url_path='toggle-description')
+    @action(detail=True, methods=['post', 'patch'], url_path='toggle-description')
     def toggle_description(self, request, pk=None):
         """Toggle (or explicitly set) whether an ad displays its description."""
         ad = self.get_object()
-        value = request.data.get('show_description', None)
-        if value is None:
-            ad.show_description = not ad.show_description
+        if 'show_description' in request.data:
+            val = request.data.get('show_description')
+            ad.show_description = str(val).lower() in ('true', '1') if isinstance(val, str) else bool(val)
         else:
-            ad.show_description = str(value).strip().lower() in (
-                '1', 'true', 'yes', 'on',
-            )
+            ad.show_description = not ad.show_description
         ad.save(update_fields=['show_description'])
         return Response(self.get_serializer(ad).data)

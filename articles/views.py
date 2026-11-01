@@ -233,6 +233,45 @@ class CMSArticleViewSet(viewsets.ModelViewSet):
         ]
         return Response(authors_data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post', 'patch'], url_path='change-author')
+    def change_author(self, request, pk=None):
+        user = request.user
+        if not (user.role == 'admin' or user.is_superuser):
+            return Response(
+                {'detail': 'Only administrators can reassign the author of an article.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        article = self.get_object()
+        new_author_id = request.data.get('author') or request.data.get('author_id')
+        if not new_author_id:
+            return Response({'detail': 'Author ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        try:
+            new_author = UserModel.objects.get(pk=new_author_id, is_active=True)
+        except UserModel.DoesNotExist:
+            return Response(
+                {'detail': 'Selected author does not exist or is inactive.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        old_author_name = article.author.username
+        article.author = new_author
+        article.save(update_fields=['author'])
+
+        return Response({
+            'status': 'success',
+            'message': f'Author changed from @{old_author_name} to @{new_author.username}',
+            'author': {
+                'id': new_author.id,
+                'username': new_author.username,
+                'first_name': new_author.first_name,
+                'last_name': new_author.last_name,
+                'full_name': f"{new_author.first_name} {new_author.last_name}".strip() or new_author.username
+            }
+        }, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'], permission_classes=[IsEditor])
     def change_author(self, request, pk=None):
         """Reassign an article to another active author (used by the CMS list)."""

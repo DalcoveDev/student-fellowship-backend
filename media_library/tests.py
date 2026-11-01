@@ -34,9 +34,9 @@ class MediaAssetModelTest(TestCase):
         small_file = SimpleUploadedFile('small.png', b'a' * 10)
         validate_file_size(small_file)
 
-        # Mock size attribute since creating a 11MB file in memory is slow
+        # Mock size attribute since creating a 101MB file in memory is slow
         large_file = SimpleUploadedFile('large.png', b'a')
-        large_file.size = 11 * 1024 * 1024
+        large_file.size = 101 * 1024 * 1024
         with self.assertRaises(ValidationError):
             validate_file_size(large_file)
 

@@ -103,6 +103,21 @@ class CMSUserViewSet(viewsets.ModelViewSet):
         )
         logger.info("User %s updated by %s: %s", user.username, self.request.user.username, details_str)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.id == request.user.id:
+            return Response(
+                {"detail": "You cannot delete your own account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if instance.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
+            return Response(
+                {"detail": "Cannot delete the sole superuser."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        logger.info("User %s deleted by %s", instance.username, request.user.username)
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'], url_path='reset-password')
     def reset_password(self, request, pk=None):
         user = self.get_object()

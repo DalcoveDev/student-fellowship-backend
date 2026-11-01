@@ -146,6 +146,37 @@ class LayoutTests(APITestCase):
         response = self.client.put(detail_url, update_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_cms_layout_sync_and_public_reflection(self):
+        """Verify that updating section title, limit, and categories in CMS
+        immediately syncs and reflects in public homepage layout API response."""
+        cat2 = Category.objects.create(name='Sports News', slug='sports-news')
+        detail_url = reverse('cms-layout-detail', args=[self.layout_section.id])
+        public_url = reverse('public-homepage-layout')
+
+        self.client.force_authenticate(user=self.editor)
+        patch_data = {
+            'title': 'Amakuru y’Ingenzi',
+            'article_limit': 2,
+            'category': self.category.id,
+            'categories': [self.category.id, cat2.id]
+        }
+        response = self.client.patch(detail_url, patch_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Amakuru y’Ingenzi')
+        self.assertEqual(response.data['article_limit'], 2)
+        self.assertEqual(len(response.data['categories']), 2)
+
+        # Public API call (unauthenticated)
+        self.client.logout()
+        pub_response = self.client.get(public_url)
+        self.assertEqual(pub_response.status_code, status.HTTP_200_OK)
+        hero_item = next((item for item in pub_response.data if item['section_type'] == 'hero'), None)
+        self.assertIsNotNone(hero_item)
+        self.assertEqual(hero_item['title'], 'Amakuru y’Ingenzi')
+        self.assertEqual(hero_item['article_limit'], 2)
+        self.assertEqual(hero_item['category_details']['name'], 'Test Category')
+        self.assertEqual(len(hero_item['categories_details']), 2)
+
     def test_cms_settings_update(self):
         self.client.force_authenticate(user=self.editor)
         detail_url = reverse('cms-settings-detail', args=[self.site_setting.pk])

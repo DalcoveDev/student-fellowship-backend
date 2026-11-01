@@ -69,7 +69,8 @@ class AdSlot(models.Model):
     is_active = models.BooleanField(default=True)
     show_description = models.BooleanField(
         default=False,
-        help_text="Show the campaign title/description/CTA instead of only the banner image",
+        help_text="Show wording overlay / description deck (title, Learn More CTA, Sponsored label). "
+                  "When False, displays the banner image in its full designated size."
     )
 
     def __str__(self):

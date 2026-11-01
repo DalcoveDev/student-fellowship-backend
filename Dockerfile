@@ -40,8 +40,8 @@ USER appuser
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=5 \
+    CMD curl -f -H "X-Forwarded-Proto: https" http://localhost:8000/api/v1/health/ || exit 1
 
 # Migrations and collectstatic run when the web container starts.
 # Celery overrides this command in Docker Compose and does not race migrations.

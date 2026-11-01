@@ -1,4 +1,5 @@
 from rest_framework import viewsets, generics, permissions
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
@@ -70,6 +71,8 @@ class PublicMenuView(generics.ListAPIView):
 class ContactInquiryCreateView(generics.CreateAPIView):
     serializer_class = ContactInquirySerializer
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'contact'
 
 
 class CMSContactInquiryViewSet(viewsets.ModelViewSet):
