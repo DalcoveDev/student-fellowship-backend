@@ -41,8 +41,6 @@
 |---|---|
 | **`articles`** | Article publishing lifecycle, versioned revision history (`ArticleRevision`), category hierarchies, tag taxonomy, and hierarchical comment moderation. |
 | **`users`** | Custom User model with granular RBAC permissions (`Reader`, `Journalist`, `Editor`, `Admin`), JWT authentication, and full administrative audit logging (`UserAuditLog`). |
-| **`ads`** | Banner slot placement scheduling, native sponsored story engine, impression/click analytics tracking, and automated ad kit inquiry workflows. |
-| **`newsletter`** | Subscriber management, HTML email campaign broadcasting, preview test sends, and resilient background email dispatch via Celery & Mailjet. |
 | **`layout`** | Dynamic homepage section sequencing, multilingual Daily Verses, recursive multi-level navigation menus, site branding settings, and visitor contact inquiries. |
 | **`media_library`**| Digital asset management with strict MIME/extension whitelisting, file size restrictions, and Cloudinary or local storage fallback. |
 | **`announcements`**| Community classifieds, official press statements, and public announcements (*Amatangazo*). |
@@ -117,20 +115,17 @@ Layer 5: PostgreSQL Pool ───────── Persistent connection reuse
 
 ```
 student-fellowship-backend/
-├── ads/                    # Advertising slots and analytics tracking
 ├── announcements/          # Community classifieds & press announcements
 ├── articles/               # Core article models, serializers, and CMS viewsets
 ├── config/                 # Project configuration
 │   ├── settings/           # Modular settings (base, dev, prod)
 │   ├── celery.py           # Celery application initialization
-│   ├── email.py            # Mailjet SMTP and API sending engine
 │   ├── sitemaps.py         # Google News & article XML sitemaps
 │   ├── storage.py          # Resilient Cloudinary / local storage fallback
 │   ├── urls.py             # Root URL routing & deep health check endpoint
 │   └── wsgi.py             # WSGI deployment entry point
 ├── layout/                 # Homepage sections, settings, menus, and verses
 ├── media_library/          # Uploaded image and asset storage
-├── newsletter/             # Subscriber lists, campaigns, and Celery tasks
 ├── site_content/           # Fellowship site content & inquiry API
 ├── users/                  # Custom User model, roles, and audit trails
 ├── Dockerfile              # Multi-stage production container build

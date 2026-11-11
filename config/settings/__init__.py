@@ -1,5 +1,5 @@
 """
-Settings package for Isezerano.
+Settings package for the student fellowship backend.
 
 Allows both:
 1. Explicit submodule target:

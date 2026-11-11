@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('ads', '0001_initial'),
         ('articles', '0001_initial'),
     ]
 
@@ -41,7 +40,6 @@ class Migration(migrations.Migration):
                 ('section_type', models.CharField(choices=[('hero', 'Hero Lead Story Section'), ('featured-grid', 'Secondary Featured Grid (3-4 stories)'), ('category-rail', 'Category Scroll Rail'), ('ad-slot', 'Advertisement Banner Block'), ('trending-widget', 'Trending & Popular List Sidebar')], max_length=30)),
                 ('order', models.PositiveIntegerField(default=0)),
                 ('is_visible', models.BooleanField(default=True)),
-                ('ad_slot', models.ForeignKey(blank=True, help_text='Required for Advertisement Banner Block sections', null=True, on_delete=django.db.models.deletion.SET_NULL, to='ads.adslot')),
                 ('category', models.ForeignKey(blank=True, help_text='Required for Category Scroll Rail sections', null=True, on_delete=django.db.models.deletion.SET_NULL, to='articles.category')),
             ],
             options={

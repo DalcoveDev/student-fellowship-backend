@@ -2,26 +2,22 @@ from rest_framework import serializers
 from .models import HomepageLayout, SiteSetting, DailyVerse, SocialLink, ContactInquiry, MenuItem
 from articles.serializers import CategorySerializer
 from articles.models import Category
-from ads.serializers import AdSlotSerializer
-from ads.models import AdSlot
 
 
 class HomepageLayoutSerializer(serializers.ModelSerializer):
     category_details = CategorySerializer(source='category', read_only=True)
     categories_details = CategorySerializer(source='categories', many=True, read_only=True)
-    ad_slot_details = AdSlotSerializer(source='ad_slot', read_only=True)
 
     categories = serializers.PrimaryKeyRelatedField(many=True, queryset=Category.objects.all(), required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
-    ad_slot = serializers.PrimaryKeyRelatedField(queryset=AdSlot.objects.all(), required=False, allow_null=True)
     article_limit = serializers.IntegerField(required=False, allow_null=True, default=5)
 
     class Meta:
         model = HomepageLayout
         fields = (
-            'id', 'page', 'section_type', 'order', 'category', 'categories', 'ad_slot',
+            'id', 'page', 'section_type', 'order', 'category', 'categories',
             'is_visible', 'article_limit', 'title', 'content', 'video_url', 'display_variant',
-            'category_details', 'categories_details', 'ad_slot_details',
+            'category_details', 'categories_details',
             'banner_image', 'banner_text', 'banner_show_description'
         )
 

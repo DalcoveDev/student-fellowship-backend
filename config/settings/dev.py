@@ -1,5 +1,5 @@
 """
-Development settings for Isezerano project.
+Development settings for the student fellowship backend.
 """
 from .base import *  # noqa: F401, F403
 

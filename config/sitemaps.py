@@ -1,5 +1,5 @@
 """
-SEO Sitemaps for Isezerano.
+SEO sitemaps for the student fellowship site.
 Includes standard Article sitemap, Static views sitemap, and Google News sitemap.
 """
 from django.contrib.sitemaps import Sitemap

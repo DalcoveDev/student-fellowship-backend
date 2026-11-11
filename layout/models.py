@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from articles.models import Category
-from ads.models import AdSlot
 
 
 class HomepageLayout(models.Model):
@@ -10,7 +9,6 @@ class HomepageLayout(models.Model):
         ('banner', 'Homepage Banner Section'),
         ('featured-grid', 'Secondary Featured Grid (3-4 stories)'),
         ('category-rail', 'Category Scroll Rail'),
-        ('ad-slot', 'Advertisement Banner Block'),
         ('trending-widget', 'Trending & Popular List Sidebar'),
         ('news-desk', 'News Desk Section'),
         ('announcements', 'Amatangazo Classifieds Section'),
@@ -67,8 +65,6 @@ class HomepageLayout(models.Model):
         blank=True,
         related_name='layout_sections',
         help_text="One or multiple categories to fetch content from")
-    ad_slot = models.ForeignKey(AdSlot, on_delete=models.SET_NULL, null=True, blank=True,
-                                help_text="Required for Advertisement Banner Block sections")
 
     is_visible = models.BooleanField(default=True)
 
@@ -81,8 +77,6 @@ class HomepageLayout(models.Model):
         desc = self.get_section_type_display()
         if self.section_type == 'category-rail' and self.category:
             desc += f" ({self.category.name})"
-        elif self.section_type == 'ad-slot' and self.ad_slot:
-            desc += f" ({self.ad_slot.name})"
         return f"{self.page} - {self.order}. {desc}"
 
 

@@ -4,7 +4,7 @@ from celery import Celery
 # Set default Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.prod')
 
-app = Celery('isezerano')
+app = Celery('student_fellowship')
 
 # Configure Celery using values from Django settings (namespace CELERY_*)
 app.config_from_object('django.conf:settings', namespace='CELERY')

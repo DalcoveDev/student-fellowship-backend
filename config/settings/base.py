@@ -1,5 +1,5 @@
 """
-Isezerano — shared settings (base).
+Student fellowship — shared settings (base).
 
 Everything that is the same across dev and production lives here.
 Environment-specific overrides go in dev.py / prod.py.
@@ -73,8 +73,6 @@ INSTALLED_APPS = [
     # Custom project apps
     'users',
     'articles',
-    'ads',
-    'newsletter',
     'layout',
     'media_library',
     'announcements',
@@ -210,9 +208,8 @@ EMAIL_HOST_PASSWORD = _env('SMTP_PASSWORD', MAILJET_SECRET_KEY or '')
 EMAIL_USE_TLS = _env('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = _env('EMAIL_USE_SSL', 'False').lower() == 'true'
 EMAIL_TIMEOUT = int(_env('EMAIL_TIMEOUT', '20'))
-DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', 'notification@isezerano.com')
+DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', 'notification@christianstudentsnetwork.org')
 SERVER_EMAIL = _env('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
-ADS_INQUIRY_EMAIL = _env('ADS_INQUIRY_EMAIL', DEFAULT_FROM_EMAIL)
 
 # --- Auth ---------------------------------------------------------------------
 
@@ -234,7 +231,7 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip()
     for o in _env(
         'CSRF_TRUSTED_ORIGINS',
-        'https://isezerano.com,https://www.isezerano.com,https://prod.isezerano.com'
+        'https://christianstudentsnetwork.org,https://www.christianstudentsnetwork.org'
     ).split(',')
     if o.strip()
 ]
@@ -350,7 +347,7 @@ LOGGING = {
 
 # --- Admin URL (obfuscated to prevent brute-force scanning) -------------------
 
-ADMIN_URL = _env('ADMIN_URL', 'isezerano-mgmt-portal/')
+ADMIN_URL = _env('ADMIN_URL', 'management-portal/')
 
 # --- Testing flag (set by manage.py test) -------------------------------------
 

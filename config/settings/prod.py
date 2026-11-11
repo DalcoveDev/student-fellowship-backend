@@ -1,5 +1,5 @@
 """
-Production settings for Isezerano project.
+Production settings for the student fellowship backend.
 
 Optimized for high performance, security, and caching.
 """
@@ -30,7 +30,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': REDIS_URL,
-        'KEY_PREFIX': 'isezerano_cache',
+        'KEY_PREFIX': 'student_fellowship_cache',
         'TIMEOUT': 300,  # 5 minutes default
     }
 }

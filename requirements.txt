@@ -1,5 +1,5 @@
 # =============================================================================
-# Isezerano Backend — Direct Dependencies Only
+# Student Fellowship Backend — Direct Dependencies Only
 # Transitive deps are managed by pip automatically.
 # =============================================================================
 

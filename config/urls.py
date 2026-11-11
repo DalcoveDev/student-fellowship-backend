@@ -1,5 +1,5 @@
 """
-URL configuration for Isezerano project.
+URL configuration for the student fellowship site.
 """
 from django.conf import settings
 from django.conf.urls.static import static
@@ -12,7 +12,6 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from ads.views import ActiveAdView, CMSAdSlotViewSet, PublicAdSlotDetailView, RequestAdKitView, TrackAnalyticsView
 from announcements.views import (
     CMSAnnouncementViewSet,
     PublicAnnouncementDetailView,
@@ -48,16 +47,15 @@ from layout.views import (
 )
 from media_library.views import CMSMediaAssetViewSet
 from site_content.views import PublicSiteContentView
-from newsletter.views import CMSNewsletterCampaignViewSet, CMSSubscriberViewSet, SubscribeView
 # Import views from our custom apps
 from users.views import CMSUserViewSet, RegisterView, UserAuditLogViewSet, UserMeView
 
 # ---------------------------------------------------------------------------
 # Django Admin Site Customization
 # ---------------------------------------------------------------------------
-admin.site.site_header = "Isezerano Administration"
-admin.site.site_title = "Isezerano Admin Portal"
-admin.site.index_title = "Welcome to Isezerano Platform Management"
+admin.site.site_header = "Christian Students Network Administration"
+admin.site.site_title = "CSN Admin Portal"
+admin.site.index_title = "Welcome to Christian Students Network Management"
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +110,7 @@ def robots_txt(request):
         "Disallow: /api/v1/auth/",
         "Allow: /",
         "",
-        "Sitemap: https://isezerano.com/sitemap.xml",
+        "Sitemap: https://christianstudentsnetwork.org/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
@@ -126,9 +124,6 @@ cms_router.register(r'articles', CMSArticleViewSet, basename='cms-articles')
 cms_router.register(r'categories', CMSCategoryViewSet, basename='cms-categories')
 cms_router.register(r'tags', CMSTagViewSet, basename='cms-tags')
 cms_router.register(r'comments', CMSCommentViewSet, basename='cms-comments')
-cms_router.register(r'ads', CMSAdSlotViewSet, basename='cms-ads')
-cms_router.register(r'subscribers', CMSSubscriberViewSet, basename='cms-subscribers')
-cms_router.register(r'campaigns', CMSNewsletterCampaignViewSet, basename='cms-campaigns')
 cms_router.register(r'layout', CMSHomepageLayoutViewSet, basename='cms-layout')
 cms_router.register(r'menus', CMSMenuItemViewSet, basename='cms-menus')
 cms_router.register(r'daily-verses', CMSDailyVerseViewSet, basename='cms-daily-verses')
@@ -175,12 +170,6 @@ urlpatterns = [
     path('api/v1/announcements/<int:pk>/', PublicAnnouncementDetailView.as_view(), name='public-announcement-detail'),
     path('api/v1/menus/', PublicMenuView.as_view(), name='public-menus'),
 
-    # Ads & Analytics endpoints
-    path('api/v1/ads/request-kit/', RequestAdKitView.as_view(), name='request-ad-kit'),
-    path('api/v1/ads/slot/<int:pk>/', PublicAdSlotDetailView.as_view(), name='public-ad-slot-detail'),
-    path('api/v1/ads/<str:placement>/', ActiveAdView.as_view(), name='active-ad'),
-    path('api/v1/analytics/track/', TrackAnalyticsView.as_view(), name='track-analytics'),
-
     # Contact Inquiries
     path('api/v1/contact/', ContactInquiryCreateView.as_view(), name='contact-inquiry-root'),
     path('api/v1/contact/inquiry/', ContactInquiryCreateView.as_view(), name='contact-inquiry'),
@@ -189,8 +178,7 @@ urlpatterns = [
     # Fellowship site content (campuses, events, articles, statement of faith, ...)
     path('api/v1/site-content/', PublicSiteContentView.as_view(), name='public-site-content'),
 
-    # Newsletter & Layout endpoints
-    path('api/v1/newsletter/subscribe/', SubscribeView.as_view(), name='newsletter-subscribe'),
+    # Layout endpoints
     path('api/v1/homepage-layout/', PublicHomepageLayoutView.as_view(), name='public-homepage-layout'),
     path('api/v1/site-settings/', PublicSiteSettingView.as_view(), name='site-settings'),
     path('api/v1/daily-verse/today/', DailyVerseTodayView.as_view(), name='daily-verse-today'),
