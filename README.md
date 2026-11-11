@@ -1,6 +1,8 @@
-# ⚙️ Isezerano — Core API & Editorial Backend
+# ⚙️ Christian Students Network — Backend API
 
-> Robust, secure, and production-hardened Django REST API powering the Isezerano digital journalism ecosystem. Features asynchronous background queues, multi-layer in-memory caching, comprehensive editorial workflows, and automated SEO syndication.
+> Django REST backend for the Christian Students Network (student fellowship) website: it serves the site content and stores contact, join, and visit inquiries. The editorial CMS underneath it also provides article publishing, announcements, and a media library for the ministry's writing.
+
+> **Live content endpoints used by the website:** `GET /api/v1/site-content/` and `POST /api/v1/inquiries/` — see [Fellowship Website API](#-fellowship-website-api).
 
 ---
 
@@ -114,7 +116,7 @@ Layer 5: PostgreSQL Pool ───────── Persistent connection reuse
 ## 📂 Project Directory Structure
 
 ```
-backend/
+student-fellowship-backend/
 ├── ads/                    # Advertising slots and analytics tracking
 ├── announcements/          # Community classifieds & press announcements
 ├── articles/               # Core article models, serializers, and CMS viewsets
@@ -126,12 +128,10 @@ backend/
 │   ├── storage.py          # Resilient Cloudinary / local storage fallback
 │   ├── urls.py             # Root URL routing & deep health check endpoint
 │   └── wsgi.py             # WSGI deployment entry point
-├── deploy/                 # Production deployment orchestration
-│   ├── docker-compose.prod.yml # Production multi-container composition
-│   └── nginx/              # Nginx reverse proxy configuration
 ├── layout/                 # Homepage sections, settings, menus, and verses
 ├── media_library/          # Uploaded image and asset storage
 ├── newsletter/             # Subscriber lists, campaigns, and Celery tasks
+├── site_content/           # Fellowship site content & inquiry API
 ├── users/                  # Custom User model, roles, and audit trails
 ├── Dockerfile              # Multi-stage production container build
 ├── entrypoint.sh           # Container startup: migration, static collect, Gunicorn
@@ -191,19 +191,9 @@ flake8 .
 
 ---
 
-## 🐳 Production Deployment (Docker Compose)
+## 🐳 Production Deployment
 
-The production stack is orchestrated via `deploy/docker-compose.prod.yml` running 7 services:
-- **`backend`**: Gunicorn WSGI running Django
-- **`frontend`**: Next.js Node.js server
-- **`nginx`**: Reverse proxy with SSL termination and Gzip
-- **`db`**: PostgreSQL 16 database with persistent storage
-- **`redis`**: Redis 7 in-memory cache & task queue
-- **`celery`**: Asynchronous worker for emails and background jobs
-- **`celery-beat`**: Periodic task scheduler
-
-```bash
-cd deploy
-docker compose -f docker-compose.prod.yml up -d --build
-```
+The repo ships a `Dockerfile` and `entrypoint.sh` (migrate, collect static files,
+then Gunicorn). Wire them up with your own compose file, reverse proxy, and
+environment variables — see `.env.example` for the settings that must be set.
 
