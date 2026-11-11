@@ -199,3 +199,78 @@ class LayoutTests(APITestCase):
         self.client.force_authenticate(user=reader)
         response = self.client.get(layout_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class SiteInquiryApiTests(APITestCase):
+    """The website's contact, join, and visit forms post here."""
+
+    def setUp(self):
+        # The view is throttled per IP; reset the throttle history per test.
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_contact_submission_is_saved(self):
+        response = self.client.post('/api/v1/inquiries/', {
+            'kind': 'contact',
+            'name': 'Test Student',
+            'email': 'test@example.com',
+            'subject': 'General enquiry',
+            'message': 'Hello from the website.',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        inquiry = ContactInquiry.objects.get()
+        self.assertEqual(inquiry.kind, 'contact')
+        self.assertEqual(inquiry.email, 'test@example.com')
+        self.assertEqual(inquiry.message, 'Hello from the website.')
+
+    def test_contact_requires_a_valid_email(self):
+        response = self.client.post('/api/v1/inquiries/', {
+            'kind': 'contact',
+            'name': 'Test Student',
+            'email': 'not-an-email',
+            'subject': 'General enquiry',
+            'message': 'Hello.',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data)
+
+    def test_join_requires_contact_details(self):
+        response = self.client.post('/api/v1/inquiries/', {
+            'kind': 'join',
+            'name': 'Test Student',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('contact', response.data)
+
+    def test_join_submission_defaults_subject_and_keeps_campus(self):
+        response = self.client.post('/api/v1/inquiries/', {
+            'kind': 'join',
+            'name': 'Test Student',
+            'contact': '+250 700 000 000',
+            'campus': 'UR-CST Reformed Bible Study',
+            'message': 'I would like to join.',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        inquiry = ContactInquiry.objects.get()
+        self.assertEqual(inquiry.kind, 'join')
+        self.assertEqual(inquiry.subject, 'Bible study enquiry')
+        self.assertEqual(inquiry.campus, 'UR-CST Reformed Bible Study')
+
+    def test_visit_submission_keeps_session(self):
+        response = self.client.post('/api/v1/inquiries/', {
+            'kind': 'visit',
+            'name': 'Test Visitor',
+            'contact': 'test@example.com',
+            'campus': 'UR-CST',
+            'session': 'Session 2',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        inquiry = ContactInquiry.objects.get()
+        self.assertEqual(inquiry.kind, 'visit')
+        self.assertEqual(inquiry.session, 'Session 2')
+        self.assertEqual(inquiry.subject, 'Visit plan')

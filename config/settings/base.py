@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'layout',
     'media_library',
     'announcements',
+    'site_content',
 ]
 
 MIDDLEWARE = [

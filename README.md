@@ -47,6 +47,23 @@
 
 ---
 
+## 🌐 Fellowship Website API
+
+The `site_content` app powers the Christian Students Network frontend:
+
+- `GET /api/v1/site-content/` — the site profile and navigation plus ministry expressions, campuses, events, Thursday sessions, gallery, testimonials, leadership teams, teaching articles, and the statement of faith, in the exact shapes the frontend renders.
+- `POST /api/v1/inquiries/` — contact, join, and visit form submissions (`kind` = `contact`, `join`, or `visit`), stored in the contact inquiry inbox in the admin.
+
+Seed or refresh the content from the checked-in snapshot with:
+
+```bash
+python manage.py seed_site_content
+```
+
+The snapshot in `site_content/data/site_content.json` mirrors the frontend's content modules, so the API and the site stay in step.
+
+---
+
 ## ⚙️ Settings Architecture
 
 Settings are split for environment isolation and zero development-leakage into production:

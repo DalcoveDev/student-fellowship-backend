@@ -228,9 +228,21 @@ class MenuItem(models.Model):
 
 
 class ContactInquiry(models.Model):
+    KIND_CHOICES = (
+        ('contact', 'Contact message'),
+        ('join', 'Bible study enquiry'),
+        ('visit', 'Visit plan'),
+    )
+
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='contact', db_index=True)
     name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
+    contact = models.CharField(
+        max_length=200, blank=True,
+        help_text="Phone or email supplied through the join or visit form")
+    campus = models.CharField(max_length=200, blank=True)
+    session = models.CharField(max_length=200, blank=True)
     subject = models.CharField(max_length=200)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

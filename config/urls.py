@@ -44,8 +44,10 @@ from layout.views import (
     PublicMenuView,
     PublicSiteSettingView,
     PublicSocialLinkListView,
+    SiteInquiryCreateView,
 )
 from media_library.views import CMSMediaAssetViewSet
+from site_content.views import PublicSiteContentView
 from newsletter.views import CMSNewsletterCampaignViewSet, CMSSubscriberViewSet, SubscribeView
 # Import views from our custom apps
 from users.views import CMSUserViewSet, RegisterView, UserAuditLogViewSet, UserMeView
@@ -182,6 +184,10 @@ urlpatterns = [
     # Contact Inquiries
     path('api/v1/contact/', ContactInquiryCreateView.as_view(), name='contact-inquiry-root'),
     path('api/v1/contact/inquiry/', ContactInquiryCreateView.as_view(), name='contact-inquiry'),
+    path('api/v1/inquiries/', SiteInquiryCreateView.as_view(), name='site-inquiry'),
+
+    # Fellowship site content (campuses, events, articles, statement of faith, ...)
+    path('api/v1/site-content/', PublicSiteContentView.as_view(), name='public-site-content'),
 
     # Newsletter & Layout endpoints
     path('api/v1/newsletter/subscribe/', SubscribeView.as_view(), name='newsletter-subscribe'),

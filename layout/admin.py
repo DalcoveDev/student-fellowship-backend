@@ -82,10 +82,13 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(ContactInquiry)
 class ContactInquiryAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'name', 'email', 'phone', 'subject', 'is_read')
-    list_filter = ('is_read', 'created_at')
-    search_fields = ('name', 'email', 'subject', 'message')
-    readonly_fields = ('name', 'email', 'phone', 'subject', 'message', 'created_at')
+    list_display = ('created_at', 'kind', 'name', 'email', 'contact', 'campus', 'subject', 'is_read')
+    list_filter = ('kind', 'is_read', 'created_at')
+    search_fields = ('name', 'email', 'contact', 'campus', 'subject', 'message')
+    readonly_fields = (
+        'kind', 'name', 'email', 'phone', 'contact', 'campus', 'session',
+        'subject', 'message', 'created_at',
+    )
     ordering = ('-created_at',)
     list_editable = ('is_read',)
     list_per_page = 30

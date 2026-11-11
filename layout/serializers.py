@@ -80,8 +80,62 @@ class CMSMenuItemSerializer(serializers.ModelSerializer):
 class ContactInquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInquiry
-        fields = ('id', 'name', 'email', 'phone', 'subject', 'message', 'created_at', 'is_read')
+        fields = (
+            'id', 'kind', 'name', 'email', 'phone', 'contact', 'campus',
+            'session', 'subject', 'message', 'created_at', 'is_read',
+        )
         read_only_fields = ('id', 'created_at')
+
+
+class SiteInquirySerializer(serializers.ModelSerializer):
+    """Validation for the website's contact, join, and visit forms."""
+
+    email = serializers.EmailField(required=False, allow_blank=True)
+    contact = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    campus = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    session = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    subject = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    message = serializers.CharField(required=False, allow_blank=True, max_length=5000)
+
+    class Meta:
+        model = ContactInquiry
+        fields = (
+            'id', 'kind', 'name', 'email', 'contact', 'campus', 'session',
+            'subject', 'message', 'created_at',
+        )
+        read_only_fields = ('id', 'created_at')
+
+    def validate(self, attrs):
+        kind = attrs.get('kind', 'contact')
+        errors = {}
+
+        if not attrs.get('name', '').strip():
+            errors['name'] = 'Please enter your name.'
+
+        if kind == 'contact':
+            if not attrs.get('email', '').strip():
+                errors['email'] = 'Please enter your email address.'
+            if not attrs.get('subject', '').strip():
+                errors['subject'] = 'Please choose a subject.'
+            if not attrs.get('message', '').strip():
+                errors['message'] = 'Please write a message.'
+        else:
+            if not attrs.get('contact', '').strip() and not attrs.get('email', '').strip():
+                errors['contact'] = 'Please leave a phone number or email address.'
+            if not attrs.get('subject', '').strip():
+                attrs['subject'] = (
+                    'Bible study enquiry' if kind == 'join' else 'Visit plan'
+                )
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        for field in ('name', 'email', 'contact', 'campus', 'session', 'subject', 'message'):
+            value = attrs.get(field)
+            if isinstance(value, str):
+                attrs[field] = value.strip()
+
+        return attrs
 
 
 class SocialLinkSerializer(serializers.ModelSerializer):

@@ -7,7 +7,8 @@ from django.db import transaction
 from .models import HomepageLayout, SiteSetting, DailyVerse, SocialLink, ContactInquiry, MenuItem
 from .serializers import (
     HomepageLayoutSerializer, SiteSettingSerializer, DailyVerseSerializer,
-    SocialLinkSerializer, ContactInquirySerializer, MenuItemSerializer, CMSMenuItemSerializer
+    SocialLinkSerializer, ContactInquirySerializer, SiteInquirySerializer,
+    MenuItemSerializer, CMSMenuItemSerializer
 )
 from users.permissions import IsEditor
 from django.utils import timezone
@@ -70,6 +71,15 @@ class PublicMenuView(generics.ListAPIView):
 
 class ContactInquiryCreateView(generics.CreateAPIView):
     serializer_class = ContactInquirySerializer
+    permission_classes = (permissions.AllowAny,)
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'contact'
+
+
+class SiteInquiryCreateView(generics.CreateAPIView):
+    """Accept the website's contact, join, and visit submissions."""
+
+    serializer_class = SiteInquirySerializer
     permission_classes = (permissions.AllowAny,)
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'contact'

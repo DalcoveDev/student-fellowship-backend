@@ -10,11 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='adslot',
-            name='show_description',
-            field=models.BooleanField(default=False, help_text='Show the campaign title/description/CTA instead of only the banner image'),
-        ),
+        # show_description is created by 0005_adslot_show_description; it was
+        # duplicated here, which made fresh databases fail to migrate.
         migrations.AlterField(
             model_name='adslot',
             name='placement',
